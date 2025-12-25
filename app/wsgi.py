@@ -52,6 +52,10 @@ def _maybe_run_startup_tasks() -> None:
 		if _truthy(auto_migrate):
 			call_command("migrate", interactive=False, verbosity=1)
 
+		auto_admin = os.environ.get("AUTO_CREATE_DEMO_ADMIN_ON_STARTUP", "")
+		if _truthy(auto_admin):
+			call_command("ensure_demo_admin", verbosity=1)
+
 		auto_seed = os.environ.get("AUTO_SEED_DEMO_ON_STARTUP", "")
 		if _truthy(auto_seed):
 			call_command("seed_demo", verbosity=1)
