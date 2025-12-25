@@ -33,6 +33,9 @@ Render will install dependencies from `requirements.txt` automatically, but if y
 
 - `gunicorn app.wsgi:application`
 
+Demo-safe option (auto-migrate on startup):
+- Set env var `AUTO_MIGRATE_ON_STARTUP=True` (and optionally `AUTO_SEED_DEMO_ON_STARTUP=True`).
+
 ### One-time / per-deploy commands
 
 Run migrations at least once after deploy:
