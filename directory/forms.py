@@ -32,7 +32,11 @@ class ServiceSearchForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         try:
-            self.fields["service_category"].queryset = ServiceCategory.objects.filter(is_active=True)
+            # Important: building a QuerySet doesn't hit the DB.
+            # We force a tiny evaluation to confirm the table exists.
+            qs = ServiceCategory.objects.filter(is_active=True)
+            list(qs.values_list("id", flat=True)[:1])
+            self.fields["service_category"].queryset = qs
         except (OperationalError, ProgrammingError):
             # Database not migrated yet.
             self.fields["service_category"].queryset = ServiceCategory.objects.none()
