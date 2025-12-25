@@ -234,14 +234,66 @@
 
         <div class="hr"></div>
 
-        <h2>Deployment notes (Render + persistent disk)</h2>
-        <p class="muted">The project is structured to work with SQLite on a persistent disk on Render for cost-effectiveness.</p>
+        <h2>Deploying on Render (demo + production)</h2>
+        <p class="muted">This project can be deployed on Render as a simple Web Service. For a demo, you can run SQLite without a paid disk (data may reset on redeploy/restart). For something persistent, attach a disk or move to Postgres later.</p>
+
+        <h3 style="margin-top: 10px;">Build &amp; start commands</h3>
+        <p class="muted">These are the recommended commands for Render’s “Build Command” and “Start Command”.</p>
+        <pre><code>Build Command:
+pip install -r requirements.txt &amp;&amp; python manage.py collectstatic --noinput
+
+Start Command:
+python manage.py migrate --noinput &amp;&amp; gunicorn app.wsgi:application --bind 0.0.0.0:$PORT</code></pre>
+
+        <div class="warning" style="margin-top: 12px;">
+          <strong>Common copy/paste pitfall</strong>
+          <p class="muted">If you copy commands from VS Code or chat, avoid pasting a Markdown link like <code>python [manage.py](...)</code>. Render runs commands via <code>bash -c</code> and the <code>(</code> causes a syntax error. Use plain <code>python manage.py ...</code>.</p>
+        </div>
+
+        <h3 style="margin-top: 16px;">Environment variables (Render → Environment)</h3>
+        <p class="muted">Set these in Render’s Environment UI (not inline in the start command).</p>
         <ul>
-          <li>Set environment variable <code>SQLITE_PATH</code> to the mounted disk path (example: <code>/var/data/db.sqlite3</code>).</li>
-          <li>Set <code>SECRET_KEY</code> to a strong unique value and <code>DEBUG=False</code>.</li>
-          <li>Set <code>ALLOWED_HOSTS</code> to your Render hostname(s).</li>
+          <li><strong>Required</strong>
+            <ul>
+              <li><code>SECRET_KEY</code>: a long random value.</li>
+              <li><code>DEBUG</code>: <code>False</code>.</li>
+              <li><code>ALLOWED_HOSTS</code>: include your Render hostname (example: <code>localservices.onrender.com</code>).</li>
+              <li><code>CSRF_TRUSTED_ORIGINS</code>: include the https origin (example: <code>https://localservices.onrender.com</code>).</li>
+            </ul>
+          </li>
+          <li><strong>Recommended</strong>
+            <ul>
+              <li><code>OSM_USER_AGENT</code>: identify your app (don’t set this inline with parentheses in bash; set it as an env var).</li>
+              <li><code>OSM_CONTACT_EMAIL</code>: optional contact email for OpenStreetMap usage.</li>
+            </ul>
+          </li>
+          <li><strong>Optional (demo self-heal)</strong>
+            <ul>
+              <li><code>AUTO_MIGRATE_ON_STARTUP</code>=<code>True</code>: runs migrations during WSGI startup. Useful for demos if you accidentally deploy without a migrate step.</li>
+              <li><code>AUTO_SEED_DEMO_ON_STARTUP</code>=<code>True</code>: runs <code>seed_demo</code> on startup (demo-only).</li>
+            </ul>
+          </li>
+          <li><strong>Optional (database persistence)</strong>
+            <ul>
+              <li><code>SQLITE_PATH</code>: set to the Render disk path (example: <code>/var/data/db.sqlite3</code>) if you attach a disk. Without a disk, SQLite will be ephemeral.</li>
+            </ul>
+          </li>
+          <li><strong>Optional (external providers)</strong>
+            <ul>
+              <li><code>PROVIDER_BACKEND</code>: <code>OSM</code> or <code>GOOGLE</code> (defaults to OSM). Admin → Provider settings can override this choice.</li>
+              <li><code>GOOGLE_MAPS_API_KEY</code>: only needed if using Google Places and not setting the key in Admin → Provider settings.</li>
+            </ul>
+          </li>
         </ul>
-        <p class="muted">Typical deploy flow (conceptual): install deps → migrate → seed (optional) → collect static → start WSGI server.</p>
+
+        <h3 style="margin-top: 16px;">Health checks</h3>
+        <p class="muted">If you set a Health Check Path in Render, make sure it points at a real endpoint. If you don’t have a dedicated endpoint yet, use <code>/</code>.</p>
+
+        <h3 style="margin-top: 16px;">Free instance vs disk</h3>
+        <ul>
+          <li><strong>Free (no disk)</strong>: good for a demo; migrations will run and the site will work, but data can reset.</li>
+          <li><strong>With disk</strong>: SQLite data persists across restarts. Set <code>SQLITE_PATH</code> to the mounted disk location.</li>
+        </ul>
 
         <h2>Security and compliance notes</h2>
         <ul>
