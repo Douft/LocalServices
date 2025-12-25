@@ -153,6 +153,15 @@
       }
       .brand { display:flex; flex-direction: column; gap: 2px; }
       .brand strong { font-weight: 700; letter-spacing: -0.02em; }
+      .brand-logo {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
+        border-radius: 14px;
+        background: rgba(0,0,0,0.55);
+        border: 1px solid var(--border);
+      }
       .nav { display:flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
       /* Buttons */
@@ -276,11 +285,13 @@
     <div class="container">
       <div class="topbar">
         <a class="brand" href="/" aria-label="Local Services">
-          <img
-            src="{% static 'Images/local_services.png' %}"
-            alt="Local Services"
-            style="height: 44px; width: auto; display: block;"
-          />
+          <span class="brand-logo">
+            <img
+              src="{% static 'Images/local_services.png' %}"
+              alt="Local Services"
+              style="height: 44px; width: auto; display: block;"
+            />
+          </span>
         </a>
         <div class="nav">
           <a class="pill" href="/">Home</a>
