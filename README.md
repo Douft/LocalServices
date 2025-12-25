@@ -8,7 +8,10 @@ Django-based local service finder with a public search page, optional external p
 
 - `SECRET_KEY`: set to a long random value
 - `DEBUG`: `False`
-- `ALLOWED_HOSTS`: include your Render hostname (e.g. `your-service.onrender.com`)
+- `ALLOWED_HOSTS`: include your Render hostname (e.g. `localservices.onrender.com`)
+
+Recommended for POST forms over HTTPS:
+- `CSRF_TRUSTED_ORIGINS`: `https://localservices.onrender.com`
 
 Recommended:
 - `SQLITE_PATH`: `/var/data/db.sqlite3` (when using a Render persistent disk)
@@ -24,7 +27,7 @@ Optional (if you want Google Places instead of OSM):
 
 Render will install dependencies from `requirements.txt` automatically, but if you set a build command:
 
-- `pip install -r requirements.txt`
+- `pip install -r requirements.txt && python manage.py collectstatic --noinput`
 
 ### Start command
 
