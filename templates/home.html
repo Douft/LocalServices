@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+{% load siteads_tags %}
+
+{% block title %}Local Services{% endblock %}
+
+{% block content %}
+  <div class="glass" style="padding: 0; overflow: hidden;">
+    <div style="position: relative;">
+      <img
+        src="{% static 'Images/banner.png' %}"
+        alt="Local services"
+        style="display:block; width:100%; height: auto; object-fit: cover;"
+      />
+      <div style="position:absolute; inset:0; background: linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.40) 55%, rgba(0,0,0,0.08) 100%);"></div>
+      <div style="position:absolute; inset:0; display:flex; align-items:center; padding: 18px;">
+        <div style="max-width: 560px;">
+          <h1 style="margin:0;">Find local services fast</h1>
+          <p class="muted" style="margin-top: 10px;">Search by category and location (Canada-first). Admin tools track what’s requested vs what’s actually used.</p>
+          <div class="spacer-12"></div>
+
+          <form method="get" action="/search/" style="margin: 0;">
+            {% if location_form %}
+              {{ location_form.latitude }}
+              {{ location_form.longitude }}
+            {% endif %}
+            <div style="display:flex; gap: 10px; align-items: end;">
+              <div style="flex: 1;">
+                <label>Search</label>
+                {% if search_form %}
+                  {{ search_form.query }}
+                {% else %}
+                  <input type="text" name="query" placeholder="plumber, mechanic, locksmith…" />
+                {% endif %}
+              </div>
+              <div>
+                <button class="btn btn-primary" type="submit">Search</button>
+              </div>
+            </div>
+            <div class="spacer-8"></div>
+            <details>
+              <summary class="muted" style="cursor:pointer;">Filters</summary>
+              <div class="spacer-12"></div>
+              <div class="form-grid">
+                <div>
+                  <label>Category</label>
+                  {% if search_form %}
+                    {{ search_form.service_category }}
+                  {% else %}
+                    <select name="service_category"><option value="">All services</option></select>
+                  {% endif %}
+                </div>
+              </div>
+            </details>
+          </form>
+
+          <div class="spacer-12"></div>
+          <div class="row">
+            <a class="btn btn-primary" href="/search/">Search now</a>
+            <a class="btn" href="/accounts/register/">Create account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top: 14px;">
+    <div class="card">
+      <strong>Popular services</strong>
+      <div class="muted" style="margin-top: 6px;">Mechanic, plumber, electrician, locksmith…</div>
+    </div>
+    <div class="card">
+      <strong>Get started</strong>
+      <div class="muted" style="margin-top: 6px;">Create an account to save your location — or search without logging in.</div>
+      <div class="spacer-12"></div>
+      <div class="row">
+        <a class="btn btn-primary" href="/search/">Search now</a>
+        <a class="btn btn-primary" href="/accounts/register/">Create account</a>
+        <a class="btn" href="/accounts/login/">Log in</a>
+      </div>
+    </div>
+    {% if user.is_staff %}
+      <div class="card">
+        <strong>Admin</strong>
+        <div class="muted" style="margin-top: 6px;">Manage providers, ads, theme, and view reports.</div>
+        <div class="spacer-12"></div>
+        <div class="row">
+          <a class="btn" href="/admin/">Open admin</a>
+          <a class="btn" href="/admin/reports/">View reports</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% ad_unit "home_inline_1" %}
+{% endblock %}

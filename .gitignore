@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Django
+*.log
+local_settings.py
+
+# Environments
+.venv/
+.env
+.env.*
+
+# SQLite DB (contains local/dev data and secrets)
+db.sqlite3
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

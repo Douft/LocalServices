@@ -1,0 +1,11 @@
+{% if ad %}
+  <div class="card" style="margin: 12px 0;">
+    <div class="muted" style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;">Sponsored</div>
+    <div style="margin-top: 6px;"><strong>{{ ad.headline }}</strong></div>
+    {% if ad.body %}<div class="muted" style="margin-top: 6px;">{{ ad.body }}</div>{% endif %}
+    {% if ad.target_url %}
+      <div class="spacer-12"></div>
+      <a class="btn" href="{{ ad.target_url }}" rel="nofollow sponsored">Learn more</a>
+    {% endif %}
+  </div>
+{% endif %}

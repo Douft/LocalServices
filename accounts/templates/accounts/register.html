@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Create account{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0;">Create account</h1>
+  <p class="muted">Create an account to see local providers and save your location.</p>
+
+  <div class="card" style="max-width: 540px;">
+    <form method="post" class="stack">
+      {% csrf_token %}
+
+      <div class="form-grid">
+        <div>
+          <label>Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<div class="muted">{{ form.username.errors }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label>Email (optional)</label>
+          {{ form.email }}
+          {% if form.email.errors %}<div class="muted">{{ form.email.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div>
+          <label>Password</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<div class="muted">{{ form.password1.errors }}</div>{% endif %}
+        </div>
+
+        <div>
+          <label>Confirm password</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<div class="muted">{{ form.password2.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-primary" type="submit">Create account</button>
+        <a class="btn" href="/accounts/login/">Log in</a>
+      </div>
+    </form>
+  </div>
+
+  <p class="muted" style="margin-top: 14px;">Already have an account? <a href="/accounts/login/">Log in</a>.</p>
+{% endblock %}

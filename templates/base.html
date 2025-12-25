@@ -1,0 +1,317 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Local Services{% endblock %}</title>
+    <style>
+      :root {
+        color-scheme: dark;
+
+        /* Color templates */
+        {% if theme_settings.color_scheme == 'frost' %}
+          --bg: #041821;
+          --text: #e9fbff;
+          --muted: rgba(233, 251, 255, 0.78);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.17);
+          --glass: rgba(255,255,255,0.055);
+          --glass-strong: rgba(255,255,255,0.085);
+          --focus: rgba(70, 235, 255, 0.30);
+          --focus-border: rgba(70, 235, 255, 0.55);
+          --btn-primary-bg: rgba(70, 235, 255, 0.18);
+          --btn-primary-border: rgba(70, 235, 255, 0.32);
+          --btn-primary-bg-hover: rgba(70, 235, 255, 0.26);
+          --btn-primary-border-hover: rgba(70, 235, 255, 0.42);
+          --grad-1: rgba(70, 235, 255, 0.18);
+          --grad-2: rgba(90, 150, 255, 0.10);
+          --grad-3: rgba(70, 255, 210, 0.08);
+        {% elif theme_settings.color_scheme == 'sunset' %}
+          --bg: #140b15;
+          --text: #fff0f6;
+          --muted: rgba(255, 240, 246, 0.78);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.17);
+          --glass: rgba(255,255,255,0.055);
+          --glass-strong: rgba(255,255,255,0.09);
+          --focus: rgba(255, 140, 120, 0.36);
+          --focus-border: rgba(255, 140, 120, 0.55);
+          --btn-primary-bg: rgba(255, 140, 120, 0.18);
+          --btn-primary-border: rgba(255, 140, 120, 0.30);
+          --btn-primary-bg-hover: rgba(255, 140, 120, 0.24);
+          --btn-primary-border-hover: rgba(255, 140, 120, 0.38);
+          --grad-1: rgba(255, 160, 120, 0.14);
+          --grad-2: rgba(255, 120, 200, 0.10);
+          --grad-3: rgba(255, 210, 120, 0.05);
+        {% elif theme_settings.color_scheme == 'forest' %}
+          --bg: #07140f;
+          --text: #e9fff5;
+          --muted: rgba(233, 255, 245, 0.78);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.17);
+          --glass: rgba(255,255,255,0.055);
+          --glass-strong: rgba(255,255,255,0.085);
+          --focus: rgba(120, 255, 200, 0.28);
+          --focus-border: rgba(120, 255, 200, 0.48);
+          --btn-primary-bg: rgba(120, 255, 200, 0.15);
+          --btn-primary-border: rgba(120, 255, 200, 0.26);
+          --btn-primary-bg-hover: rgba(120, 255, 200, 0.22);
+          --btn-primary-border-hover: rgba(120, 255, 200, 0.34);
+          --grad-1: rgba(120, 255, 200, 0.12);
+          --grad-2: rgba(120, 190, 255, 0.09);
+          --grad-3: rgba(120, 255, 160, 0.06);
+        {% else %}
+          /* midnight (default) */
+          --bg: #0b1020;
+          --text: #e7eaf2;
+          --muted: rgba(231, 234, 242, 0.78);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.16);
+          --glass: rgba(255,255,255,0.06);
+          --glass-strong: rgba(255,255,255,0.085);
+          --focus: rgba(120, 160, 255, 0.42);
+          --focus-border: rgba(120, 160, 255, 0.45);
+          --btn-primary-bg: rgba(120,160,255,0.18);
+          --btn-primary-border: rgba(120,160,255,0.28);
+          --btn-primary-bg-hover: rgba(120,160,255,0.24);
+          --btn-primary-border-hover: rgba(120,160,255,0.36);
+          --grad-1: rgba(80,140,255,0.16);
+          --grad-2: rgba(160,80,255,0.12);
+          --grad-3: rgba(80,255,210,0.06);
+        {% endif %}
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          background:
+            {% if theme_settings.background_gradients %}
+              radial-gradient(1200px 800px at 20% 10%, var(--grad-1), transparent),
+              radial-gradient(900px 650px at 85% 0%, var(--grad-2), transparent),
+              radial-gradient(900px 650px at 60% 100%, var(--grad-3), transparent),
+            {% endif %}
+            var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+      .container { max-width: 1040px; margin: 0 auto; padding: 28px 16px; }
+
+      {% if theme_settings.compact_layout %}
+      .container { padding: 18px 14px; }
+      {% endif %}
+
+      /* Typography */
+      h1, h2, h3 { margin: 0.2em 0 0.6em; letter-spacing: -0.015em; }
+      h1 { font-size: 30px; line-height: 1.15; }
+      h2 { font-size: 18px; margin-top: 18px; }
+      h3 { font-size: 15px; }
+      p { margin: 0.55em 0; }
+      .muted { opacity: 1; color: var(--muted); }
+
+      /* Surfaces */
+      .glass {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 18px;
+      }
+      .card {
+        background: var(--glass);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 14px;
+      }
+
+      {% if not theme_settings.glass_effect %}
+      .glass, .card {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      {% endif %}
+
+      /* Snow overlay (optional) */
+      #snow-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      /* Links */
+      a { color: inherit; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+
+      /* Header */
+      .topbar {
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      .brand { display:flex; flex-direction: column; gap: 2px; }
+      .brand strong { font-weight: 700; letter-spacing: -0.02em; }
+      .nav { display:flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+      /* Buttons */
+      .pill, .btn {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+        user-select: none;
+      }
+      .pill:hover, .btn:hover { background: rgba(255,255,255,0.11); border-color: var(--border-strong); text-decoration: none; }
+      .pill:active, .btn:active { transform: translateY(1px); }
+      button.pill, button.btn { appearance: none; -webkit-appearance: none; font: inherit; color: inherit; cursor: pointer; }
+      .btn-primary { background: var(--btn-primary-bg); border-color: var(--btn-primary-border); }
+      .btn-primary:hover { background: var(--btn-primary-bg-hover); border-color: var(--btn-primary-border-hover); }
+
+      /* Forms */
+      label { font-size: 12px; color: var(--muted); }
+      input, select, textarea {
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 6px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,0.18);
+        color: var(--text);
+        outline: none;
+      }
+      input::placeholder, textarea::placeholder { color: rgba(231, 234, 242, 0.5); }
+      input:focus, select:focus, textarea:focus {
+        border-color: var(--focus-border);
+        box-shadow: 0 0 0 4px var(--focus);
+      }
+      .form-grid { display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+      .stack { display:grid; gap: 12px; }
+
+      /* Layout helpers */
+      .grid { display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      .row { display:flex; gap: 10px; flex-wrap: wrap; }
+      .spacer-8 { height: 8px; }
+      .spacer-12 { height: 12px; }
+      .spacer-16 { height: 16px; }
+
+      /* Messages */
+      .message { padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--glass-strong); }
+      .message strong { font-weight: 650; }
+    </style>
+  </head>
+  <body>
+    {% if theme_settings.snow_effect %}
+      <canvas id="snow-canvas" aria-hidden="true"></canvas>
+      <script>
+        (function () {
+          try {
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion) return;
+
+            var canvas = document.getElementById('snow-canvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            function resize() {
+              var dpr = window.devicePixelRatio || 1;
+              canvas.width = Math.floor(window.innerWidth * dpr);
+              canvas.height = Math.floor(window.innerHeight * dpr);
+              canvas.style.width = window.innerWidth + 'px';
+              canvas.style.height = window.innerHeight + 'px';
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            var flakeCount = Math.min(160, Math.max(70, Math.floor(window.innerWidth / 9)));
+            var flakes = [];
+            for (var i = 0; i < flakeCount; i++) {
+              flakes.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                r: 1.0 + Math.random() * 2.6,
+                s: 0.6 + Math.random() * 1.4,
+                w: (Math.random() - 0.5) * 0.7,
+                o: 0.35 + Math.random() * 0.55
+              });
+            }
+
+            function tick() {
+              ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+              for (var i = 0; i < flakes.length; i++) {
+                var f = flakes[i];
+                f.y += f.s;
+                f.x += f.w;
+                if (f.y > window.innerHeight + 10) {
+                  f.y = -12;
+                  f.x = Math.random() * window.innerWidth;
+                }
+                if (f.x < -12) f.x = window.innerWidth + 12;
+                if (f.x > window.innerWidth + 12) f.x = -12;
+
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(231, 234, 242,' + f.o + ')';
+                ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+                ctx.fill();
+              }
+              window.requestAnimationFrame(tick);
+            }
+            tick();
+          } catch (e) {
+            // Ignore.
+          }
+        })();
+      </script>
+    {% endif %}
+    <div class="container">
+      <div class="topbar">
+        <a class="brand" href="/" aria-label="Local Services">
+          <img
+            src="{% static 'Images/local_services.png' %}"
+            alt="Local Services"
+            style="height: 44px; width: auto; display: block;"
+          />
+        </a>
+        <div class="nav">
+          <a class="pill" href="/">Home</a>
+          <a class="pill" href="/search/">Search</a>
+          {% if user.is_authenticated %}
+            <a class="pill" href="/dashboard/">Dashboard</a>
+            <form method="post" action="/accounts/logout/" style="display:inline; margin: 0;">
+              {% csrf_token %}
+              <button class="pill" type="submit">Logout</button>
+            </form>
+          {% else %}
+            <a class="pill" href="/accounts/login/">Login</a>
+            <a class="pill btn-primary" href="/accounts/register/">Register</a>
+          {% endif %}
+          {% if user.is_staff %}
+            <a class="pill" href="/admin/reports/">Reports</a>
+            <a class="pill" href="/admin/">Admin</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <main class="glass" style="padding: 20px;">
+        {% if messages %}
+          <div class="stack" style="margin-bottom: 12px;">
+            {% for message in messages %}
+              <div class="message"><strong>{{ message }}</strong></div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

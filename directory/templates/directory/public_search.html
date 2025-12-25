@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% load siteads_tags %}
+
+{% block title %}Search{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0;">Search services</h1>
+  <p class="muted">Start typing, then optionally refine with filters.</p>
+
+  <div class="card" style="max-width: 720px; margin: 16px auto 0;">
+    <form method="get" style="margin:0;">
+      {{ location_form.latitude }}
+      {{ location_form.longitude }}
+
+      <div style="display:flex; gap: 10px; align-items: end;">
+        <div style="flex:1;">
+          <label>Search</label>
+          {{ search_form.query }}
+        </div>
+        <div>
+          <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </div>
+
+      <div class="spacer-12"></div>
+      <details>
+        <summary class="muted" style="cursor:pointer;">Filters</summary>
+        <div class="spacer-12"></div>
+        <div class="form-grid">
+          <div>
+            <label>Category</label>
+            {{ search_form.service_category }}
+          </div>
+          <div>
+            <label>City</label>
+            {{ location_form.city }}
+          </div>
+          <div>
+            <label>Province/State</label>
+            {{ location_form.state }}
+          </div>
+          <div>
+            <label>Postal code</label>
+            {{ location_form.postal_code }}
+          </div>
+        </div>
+        <div class="spacer-12"></div>
+        <div class="muted" style="font-size: 12px;">Tip: allow browser location for nearby results.</div>
+      </details>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      try {
+        var form = document.currentScript && document.currentScript.previousElementSibling;
+        if (!form || !form.querySelector) return;
+
+        var latInput = form.querySelector('input[name="latitude"]');
+        var lonInput = form.querySelector('input[name="longitude"]');
+        if (!latInput || !lonInput) return;
+
+        var params = new URLSearchParams(window.location.search);
+        var hasLocation = params.get('postal_code') || (params.get('city') && params.get('state'));
+        var hasCoords = params.get('latitude') && params.get('longitude');
+        if (hasLocation || hasCoords) return;
+
+        if (!navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          latInput.value = String(pos.coords.latitude);
+          lonInput.value = String(pos.coords.longitude);
+          form.submit();
+        }, function () {
+          // User denied or unavailable: fall back to manual filters.
+        }, { enableHighAccuracy: false, timeout: 6000, maximumAge: 300000 });
+      } catch (e) {
+        // Ignore.
+      }
+    })();
+  </script>
+
+  {% ad_unit "search_inline_1" %}
+
+  {% if external_error %}
+    <div class="glass" style="padding: 14px; margin: 12px 0;">
+      <strong>External results</strong>
+      <div class="muted" style="margin-top: 6px;">{{ external_error }}</div>
+    </div>
+  {% endif %}
+
+  {% if external_providers %}
+    <h2>More results{% if external_source %} ({{ external_source }}){% endif %}</h2>
+    {% if external_source == "OpenStreetMap" %}
+      <p class="muted" style="margin-top:-6px;">Data from OpenStreetMap contributors. Listings may be incomplete.</p>
+    {% elif external_source == "Google Places" %}
+      <p class="muted" style="margin-top:-6px;">Data from Google Places. Results are shown live and not saved to the database.</p>
+    {% else %}
+      <p class="muted" style="margin-top:-6px;">External results.</p>
+    {% endif %}
+    <div style="display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+      {% for p in external_providers %}
+        <div class="glass" style="padding: 14px;">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category }}{% if p.address %} · {{ p.address }}{% endif %}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if suggested_providers %}
+    <h2>Suggested</h2>
+    <div class="grid">
+      {% for p in suggested_providers %}
+        <div class="card">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2>Providers</h2>
+  {% if providers %}
+    <div class="grid">
+      {% for p in providers %}
+        <div class="card">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No providers match your filters yet.</p>
+  {% endif %}
+{% endblock %}

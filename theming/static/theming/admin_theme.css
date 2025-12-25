@@ -1,0 +1,55 @@
+/* ThemeSettings admin: make color scheme choices feel like simple checkboxes with previews. */
+
+.theming-scheme {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.theming-scheme .scheme-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--hairline-color, #e0e0e0);
+  border-radius: 10px;
+  background: var(--body-bg, #fff);
+}
+
+.theming-scheme .scheme-item:hover {
+  border-color: var(--primary, #3b82f6);
+}
+
+.theming-scheme input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.theming-scheme .scheme-swatch {
+  width: 52px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.12);
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.theming-scheme .scheme-swatch .a {
+  height: 100%;
+}
+
+.theming-scheme .scheme-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.theming-scheme .scheme-label .name {
+  font-weight: 600;
+}
+
+.theming-scheme .scheme-label .hint {
+  font-size: 12px;
+  opacity: 0.8;
+}

@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load siteads_tags %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0;">Dashboard</h1>
+  <p class="muted">Find providers near you based on your saved location.</p>
+
+  <div class="card" style="margin: 12px 0;">
+    <strong>Your location</strong>
+    <div class="spacer-12"></div>
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_location" />
+
+      <div>
+        <label>City</label>
+        {{ location_form.city }}
+      </div>
+      <div>
+        <label>Province/State</label>
+        {{ location_form.state }}
+      </div>
+      <div>
+        <label>Postal code</label>
+        {{ location_form.postal_code }}
+      </div>
+
+      <div style="align-self:end;">
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <strong>Search services</strong>
+    <div class="spacer-12"></div>
+    <form method="get" class="form-grid">
+      <div>
+        <label>Category</label>
+        {{ search_form.service_category }}
+      </div>
+      <div>
+        <label>Search</label>
+        {{ search_form.query }}
+      </div>
+      <div style="align-self:end;">
+        <button class="btn btn-primary" type="submit">Search</button>
+      </div>
+    </form>
+  </div>
+
+  {% ad_unit "dashboard_inline_1" %}
+
+  {% if external_error %}
+    <div class="glass" style="padding: 14px; margin: 12px 0;">
+      <strong>External results</strong>
+      <div class="muted" style="margin-top: 6px;">{{ external_error }}</div>
+    </div>
+  {% endif %}
+
+  {% if external_providers %}
+    <h2>More results{% if external_source %} ({{ external_source }}){% endif %}</h2>
+    {% if external_source == "OpenStreetMap" %}
+      <p class="muted" style="margin-top:-6px;">Data from OpenStreetMap contributors. Listings may be incomplete.</p>
+    {% elif external_source == "Google Places" %}
+      <p class="muted" style="margin-top:-6px;">Data from Google Places. Results are shown live and not saved to the database.</p>
+    {% else %}
+      <p class="muted" style="margin-top:-6px;">External results.</p>
+    {% endif %}
+    <div style="display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
+      {% for p in external_providers %}
+        <div class="glass" style="padding: 14px;">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category }}{% if p.address %} · {{ p.address }}{% endif %}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% if suggested_providers %}
+    <h2>Suggested</h2>
+    <div class="grid">
+      {% for p in suggested_providers %}
+        <div class="card">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="/out/provider/{{ p.id }}/" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+
+          <div class="spacer-12"></div>
+          <div class="row">
+            <form method="post" action="/provider/{{ p.id }}/contact/" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn" type="submit">I contacted this provider</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2>Providers</h2>
+  {% if providers %}
+    <div class="grid">
+      {% for p in providers %}
+        <div class="card">
+          <strong>{{ p.name }}</strong>
+          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
+          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="/out/provider/{{ p.id }}/" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+
+          <div class="spacer-12"></div>
+          <div class="row">
+            <form method="post" action="/provider/{{ p.id }}/contact/" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn" type="submit">I contacted this provider</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="muted">No providers match your filters yet. Try setting your city + province (MB) or a postal code (format example: R0A 0A0).</p>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Local Services — Project Overview</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: radial-gradient(1200px 800px at 20% 10%, rgba(80,140,255,0.16), transparent),
+                    radial-gradient(1000px 700px at 80% 0%, rgba(160,80,255,0.12), transparent),
+                    #0b1020;
+        color: #e7eaf2;
+        line-height: 1.5;
+      }
+      .wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px; }
+      .glass {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 18px;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 18px;
+      }
+      h1, h2, h3 { margin: 0.2em 0 0.6em; }
+      h1 { font-size: 28px; }
+      h2 { font-size: 18px; margin-top: 22px; }
+      p { margin: 0.5em 0; }
+      .muted { opacity: 0.85; }
+      .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+      pre {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        padding: 12px;
+        overflow: auto;
+      }
+      .pill {
+        display:inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        margin-right: 6px;
+        margin-bottom: 6px;
+      }
+      .hr { height: 1px; background: rgba(255,255,255,0.12); margin: 18px 0; }
+      ul { margin: 0.5em 0 0.5em 1.1em; }
+      li { margin: 0.25em 0; }
+      a { color: inherit; text-decoration: underline; }
+      .warning {
+        background: rgba(255, 170, 80, 0.10);
+        border: 1px solid rgba(255, 170, 80, 0.22);
+        border-radius: 14px;
+        padding: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="glass">
+        <h1>Local Services — Project Overview</h1>
+        <p class="muted">A service-finder site where users discover local providers (mechanics, plumbers, electricians, locksmiths, etc.). This document explains what’s implemented, how “requested” vs “used” services are tracked, and how to run/deploy.</p>
+
+        <div class="grid" style="margin-top: 14px;">
+          <div class="glass" style="padding: 14px;">
+            <strong>Stack</strong>
+            <div class="muted" style="margin-top: 6px;">
+              Django 5 (Python), SQLite (dev), Django Admin (operations), simple HTML templates.
+            </div>
+          </div>
+          <div class="glass" style="padding: 14px;">
+            <strong>Primary goals</strong>
+            <div style="margin-top: 6px;">
+              <span class="pill">Local discovery</span>
+              <span class="pill">User login area</span>
+              <span class="pill">Admin oversight</span>
+              <span class="pill">Gentle ads</span>
+              <span class="pill">SEO readiness</span>
+            </div>
+          </div>
+          <div class="glass" style="padding: 14px;">
+            <strong>Environment</strong>
+            <div class="muted" style="margin-top: 6px;">Local dev now; intended hosting on Render with a persistent disk for the database.</div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>What’s implemented</h2>
+        <ul>
+          <li><strong>Service directory data model</strong>: service categories and providers, including “Suggested” providers with ranking.</li>
+          <li><strong>User profiles</strong>: stores user location (city/state/zip and optional lat/lng) + preferences.</li>
+          <li><strong>Analytics foundation</strong>: event tables for “requested” services (SearchEvent) and “used” providers (UsageEvent).</li>
+          <li><strong>Theme settings</strong>: admin-controlled site look (color templates, gradients, compact layout, glass effect, optional snow overlay).</li>
+          <li><strong>Gentle ads foundation</strong>: ad units with placements and scheduling (kept intentionally small and non-intrusive).</li>
+          <li><strong>External provider backends</strong>: a pluggable “free-first, paid-later” integration for finding additional businesses by location (OpenStreetMap now; Google Places supported as a switchable backend).</li>
+          <li><strong>Public search</strong>: users can search without logging in; logged-in users get saved-location defaults.</li>
+          <li><strong>Admin panel</strong>: manage categories/providers/ads/theme, configure provider backend settings, and inspect analytics.</li>
+          <li><strong>Seed tooling</strong>: command to seed starter categories + demo providers + create/update a test admin.</li>
+        </ul>
+
+        <h2>Free-first local business lookup (OSM now, Google later)</h2>
+        <p class="muted">To stay legal and scalable, the project supports external “provider backends”. The default backend uses OpenStreetMap services (Nominatim + Overpass). Google Places is supported as an alternative backend. You can switch backends either via the Admin panel (recommended) or environment variables.</p>
+        <div class="grid">
+          <div class="glass" style="padding: 14px;">
+            <h3 style="margin-top:0; font-size: 16px;">Default: OpenStreetMap</h3>
+            <ul>
+              <li>Free-first approach (with rate limits).</li>
+              <li>Configured via Admin → <strong>Provider settings</strong> → Provider backend = OpenStreetMap (or <code>PROVIDER_BACKEND=OSM</code>).</li>
+              <li>Recommended: set <code>OSM_USER_AGENT</code> and optional <code>OSM_CONTACT_EMAIL</code>.</li>
+            </ul>
+          </div>
+          <div class="glass" style="padding: 14px;">
+            <h3 style="margin-top:0; font-size: 16px;">Later: Google Places</h3>
+            <ul>
+              <li>Paid API (pay-as-you-go, monthly credit may apply depending on current Google policy).</li>
+              <li>Configured via Admin → <strong>Provider settings</strong> (or <code>PROVIDER_BACKEND=GOOGLE</code> + <code>GOOGLE_MAPS_API_KEY</code>).</li>
+              <li>To keep costs down, the implementation uses Places Text Search and avoids extra details calls by default.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h2>Google API key setup (for external local businesses)</h2>
+        <p class="muted">The exact Google UI changes over time, but the overall steps are consistent. You’ll be using Google Maps Platform and the Places API. This project calls Google from the server (Django), not from the browser.</p>
+        <ul>
+          <li><strong>Create a Google Cloud project</strong> (or reuse an existing one).</li>
+          <li><strong>Enable billing</strong> for the project (required for most Places usage).</li>
+          <li><strong>Enable the Places API</strong> (and any relevant “Places” SKU/API Google currently uses for Text Search).</li>
+          <li><strong>Create an API key</strong> in “APIs & Services” → Credentials.</li>
+          <li><strong>Restrict the key</strong>:
+            <ul>
+              <li><strong>API restrictions</strong>: restrict to Places-related APIs only.</li>
+              <li><strong>Application restrictions</strong>: since requests come from your server, prefer IP restrictions to your server’s outbound IP(s) if possible.</li>
+            </ul>
+          </li>
+          <li><strong>Set quotas/budget alerts</strong> so spend is predictable.</li>
+        </ul>
+        <div class="warning">
+          <strong>Key handling</strong>
+          <p class="muted">This project allows storing the Google key in the database via Admin for convenience. Only trusted admins should have access. Treat it as a secret.</p>
+        </div>
+
+        <h2>Admin panel guide (what each section does)</h2>
+        <p class="muted">The Admin panel is the operational control center. It’s only visible to staff/admin users and is available at <code>/admin/</code>.</p>
+        <ul>
+          <li><strong>Directory → Service categories</strong>
+            <ul>
+              <li><strong>is_active</strong>: hide/show a category in the UI (inactive categories won’t appear in category dropdowns).</li>
+              <li><strong>sort_order</strong>: controls display order (lower numbers appear first).</li>
+              <li><strong>Bulk actions</strong>: quickly mark categories active/inactive.</li>
+            </ul>
+          </li>
+          <li><strong>Directory → Service providers</strong>
+            <ul>
+              <li>These are the “internal” providers stored in your database.</li>
+              <li><strong>is_active</strong>: hide/show a provider.</li>
+              <li><strong>is_suggested</strong> + <strong>suggested_rank</strong>: curated “Suggested” results (lower rank shows higher).</li>
+              <li>Filters allow you to quickly browse by category/state/active/suggested.</li>
+            </ul>
+          </li>
+          <li><strong>Directory → Provider settings</strong>
+            <ul>
+              <li>Select which external backend is used for “More results” (OpenStreetMap or Google Places).</li>
+              <li>Store the <strong>Google Maps API key</strong> and optional region bias (CA/US).</li>
+              <li>This is a single row (“singleton”) so there’s one source of truth.</li>
+            </ul>
+          </li>
+          <li><strong>Theme settings</strong>
+            <ul>
+              <li><strong>Color templates</strong>: choose the overall site palette.</li>
+              <li><strong>background_gradients</strong>: toggles decorative background glow.</li>
+              <li><strong>glass_effect</strong>: toggles blur/glass styling.</li>
+              <li><strong>compact_layout</strong>: reduces padding for a denser layout.</li>
+              <li><strong>snow_effect</strong>: seasonal visual effect overlay.</li>
+            </ul>
+          </li>
+          <li><strong>Site ads</strong>
+            <ul>
+              <li>Ad units are small, “gentle” placements with a headline/body/link and priority.</li>
+              <li>Use placements to control where ads appear (home/dashboard inline slots).</li>
+            </ul>
+          </li>
+          <li><strong>Analytics</strong>
+            <ul>
+              <li><strong>SearchEvent</strong> (“requested”): what users are searching for.</li>
+              <li><strong>UsageEvent</strong> (“used”): what users actually interact with (contact/click).</li>
+              <li><strong>Reports</strong>: staff-only summary view at <code>/admin/reports/</code>.</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h2>How “services are used” and measured</h2>
+        <div class="grid">
+          <div class="glass" style="padding: 14px;">
+            <h3 style="margin-top:0; font-size: 16px;">Requested services (intent)</h3>
+            <p class="muted">Recorded when a user searches for a service category or types a query.</p>
+            <p><strong>Table:</strong> <code>analyticsapp.SearchEvent</code></p>
+            <p><strong>Use:</strong> "What are people looking for most?"</p>
+          </div>
+          <div class="glass" style="padding: 14px;">
+            <h3 style="margin-top:0; font-size: 16px;">Used services (behavior)</h3>
+            <p class="muted">Recorded when a user interacts with a provider (view, contact, click website).</p>
+            <p><strong>Table:</strong> <code>analyticsapp.UsageEvent</code></p>
+            <p><strong>Use:</strong> "What providers/services are actually being used?"</p>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <h2>Local development: how to run</h2>
+        <p class="muted">These commands assume you are in the project root and using the existing virtual environment.</p>
+        <pre><code>D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py migrate
+      D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py seed_demo
+      D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py runserver 127.0.0.1:8000</code></pre>
+        <p><strong>Admin panel:</strong> <code>/admin/</code></p>
+
+        <div class="warning">
+          <strong>Testing credentials</strong>
+          <p class="muted">A default admin account is created for local testing.</p>
+          <p><code>username: admin</code><br /><code>password: secret</code></p>
+          <p class="muted">Do not use these credentials in production.</p>
+        </div>
+
+        <h2>How admins manage “Suggested” providers</h2>
+        <ul>
+          <li>In Django Admin, edit a provider and enable <strong>is_suggested</strong>.</li>
+          <li>Set <strong>suggested_rank</strong> (lower = more prominent).</li>
+          <li>This supports future revenue options (e.g., promoted placements) while keeping the UX clean.</li>
+        </ul>
+
+        <div class="hr"></div>
+
+        <h2>Deployment notes (Render + persistent disk)</h2>
+        <p class="muted">The project is structured to work with SQLite on a persistent disk on Render for cost-effectiveness.</p>
+        <ul>
+          <li>Set environment variable <code>SQLITE_PATH</code> to the mounted disk path (example: <code>/var/data/db.sqlite3</code>).</li>
+          <li>Set <code>SECRET_KEY</code> to a strong unique value and <code>DEBUG=False</code>.</li>
+          <li>Set <code>ALLOWED_HOSTS</code> to your Render hostname(s).</li>
+        </ul>
+        <p class="muted">Typical deploy flow (conceptual): install deps → migrate → seed (optional) → collect static → start WSGI server.</p>
+
+        <h2>Security and compliance notes</h2>
+        <ul>
+          <li>Never ship the test admin password to production.</li>
+          <li>Use HTTPS on Render and keep secrets as environment variables.</li>
+          <li>External provider lookups should follow the chosen provider’s Terms (OSM/Overpass usage policies; Google Maps Platform terms if enabled). Results are displayed live and not persisted by default.</li>
+          <li>As SEO features are added, templates should remain accessible (semantic HTML, descriptive titles, and structured data where appropriate).</li>
+        </ul>
+
+        <div class="hr"></div>
+
+        <p class="muted">Last updated: December 24, 2025</p>
+      </div>
+    </div>
+  </body>
+</html>

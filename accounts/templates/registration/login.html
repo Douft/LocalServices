@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+  <h1 style="margin-top:0;">Log in</h1>
+  <p class="muted">Access your dashboard to find local services near you.</p>
+
+  {% if form.errors %}
+    <div class="message" style="border-color: rgba(255,170,80,0.22);">
+      <strong>Login failed</strong>
+      <div class="muted" style="margin-top:6px;">Please check your username and password.</div>
+    </div>
+  {% endif %}
+
+  <div class="card" style="max-width: 480px;">
+    <form method="post" class="stack">
+    {% csrf_token %}
+    <div>
+      <label>Username</label><br />
+      {{ form.username }}
+    </div>
+    <div>
+      <label>Password</label><br />
+      {{ form.password }}
+    </div>
+      <div class="row">
+        <button class="btn btn-primary" type="submit">Log in</button>
+        <a class="btn" href="/accounts/register/">Create account</a>
+      </div>
+    </form>
+  </div>
+
+  <p class="muted" style="margin-top: 14px;">No account yet? <a href="/accounts/register/">Create one</a>.</p>
+{% endblock %}
