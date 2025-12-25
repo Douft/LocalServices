@@ -1,6 +1,7 @@
 """Forms for dashboard search and profile updates."""
 
 from django import forms
+from django.db.utils import OperationalError, ProgrammingError
 
 from .models import ServiceCategory
 
@@ -17,7 +18,7 @@ class LocationForm(forms.Form):
 
 class ServiceSearchForm(forms.Form):
     service_category = forms.ModelChoiceField(
-        queryset=ServiceCategory.objects.filter(is_active=True),
+        queryset=ServiceCategory.objects.none(),
         required=False,
         empty_label="All services",
     )
@@ -27,3 +28,11 @@ class ServiceSearchForm(forms.Form):
         label="Search",
         widget=forms.TextInput(attrs={"placeholder": "plumber, mechanic, locksmith…"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        try:
+            self.fields["service_category"].queryset = ServiceCategory.objects.filter(is_active=True)
+        except (OperationalError, ProgrammingError):
+            # Database not migrated yet.
+            self.fields["service_category"].queryset = ServiceCategory.objects.none()

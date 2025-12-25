@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from django import template
+from django.db.utils import OperationalError, ProgrammingError
 from django.db.models import Q
 from django.utils import timezone
 
@@ -18,12 +19,16 @@ def ad_unit(placement: str):
     Returns None when no ads are enabled/eligible.
     """
 
-    now = timezone.now()
-    unit = (
-        AdUnit.objects.filter(placement=placement, is_enabled=True)
-        .filter(Q(starts_at__isnull=True) | Q(starts_at__lte=now))
-        .filter(Q(ends_at__isnull=True) | Q(ends_at__gte=now))
-        .order_by("priority", "-created_at")
-        .first()
-    )
-    return {"ad": unit}
+    try:
+        now = timezone.now()
+        unit = (
+            AdUnit.objects.filter(placement=placement, is_enabled=True)
+            .filter(Q(starts_at__isnull=True) | Q(starts_at__lte=now))
+            .filter(Q(ends_at__isnull=True) | Q(ends_at__gte=now))
+            .order_by("priority", "-created_at")
+            .first()
+        )
+        return {"ad": unit}
+    except (OperationalError, ProgrammingError):
+        # Database not migrated yet.
+        return {"ad": None}
