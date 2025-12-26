@@ -11,6 +11,18 @@ class LocationForm(forms.Form):
     state = forms.CharField(max_length=80, required=False, label="Province/State")
     postal_code = forms.CharField(max_length=20, required=False, label="Postal code")
 
+    radius_km = forms.ChoiceField(
+        required=False,
+        label="Radius",
+        choices=[
+            ("10", "10 km"),
+            ("25", "25 km"),
+            ("50", "50 km"),
+            ("100", "100 km"),
+        ],
+        initial="100",
+    )
+
     # Optional: populated by browser geolocation (public search).
     latitude = forms.CharField(required=False, widget=forms.HiddenInput())
     longitude = forms.CharField(required=False, widget=forms.HiddenInput())
@@ -26,7 +38,15 @@ class ServiceSearchForm(forms.Form):
         max_length=120,
         required=False,
         label="Search",
-        widget=forms.TextInput(attrs={"placeholder": "plumber, mechanic, locksmith…"}),
+        widget=forms.TextInput(
+            attrs={
+                "placeholder": "plumber, mechanic, locksmith…",
+                "autocomplete": "off",
+                "autocapitalize": "off",
+                "autocorrect": "off",
+                "spellcheck": "false",
+            }
+        ),
     )
 
     def __init__(self, *args, **kwargs):

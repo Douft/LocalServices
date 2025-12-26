@@ -1,0 +1,53 @@
+{% if external_error %}
+  <div class="glass" style="padding: 14px; margin-top: 12px;">
+    <strong>External results</strong>
+    <div class="muted" style="margin-top: 6px;">{{ external_error }}</div>
+  </div>
+{% endif %}
+
+{% if external_providers %}
+  <h3 style="margin: 14px 0 0;">More results{% if external_source %} ({{ external_source }}){% endif %}</h3>
+  <div style="display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 12px;">
+    {% for p in external_providers %}
+      <div class="glass" style="padding: 14px;">
+        <strong>{{ p.name }}</strong>
+        <div class="muted" style="margin-top: 6px;">{{ p.category }}{% if p.address %} · {{ p.address }}{% endif %}</div>
+        {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+        {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if suggested_providers %}
+  <h3 style="margin: 14px 0 0;">Suggested</h3>
+  <div class="grid" style="margin-top: 12px;">
+    {% for p in suggested_providers %}
+      <div class="card">
+        <strong>{{ p.name }}</strong>
+        <div class="muted" style="margin-top: 6px;">{{ p.category.name }}{% if p.city or p.state or p.postal_code %} · {{ p.city }} {{ p.state }} {{ p.postal_code }}{% endif %}</div>
+        {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+        {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if providers %}
+  <div class="grid" style="margin-top: 12px;">
+    {% for p in providers %}
+      <div class="card">
+        <strong>{{ p.name }}</strong>
+        <div class="muted" style="margin-top: 6px;">{{ p.category.name }}{% if p.city or p.state or p.postal_code %} · {{ p.city }} {{ p.state }} {{ p.postal_code }}{% endif %}</div>
+        {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
+        {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  {% if suggested_providers or external_providers %}
+    <div class="muted" style="margin-top: 10px;">No additional local providers match your filters.</div>
+  {% else %}
+    <div class="muted" style="margin-top: 10px;">No providers match your filters yet.</div>
+  {% endif %}
+{% endif %}

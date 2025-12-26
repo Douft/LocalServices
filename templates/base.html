@@ -5,53 +5,89 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{% block title %}Local Services{% endblock %}</title>
+    <link rel="icon" href="{% static 'Images/local_services.png' %}" type="image/png" />
+    <link rel="shortcut icon" href="{% static 'Images/local_services.png' %}" type="image/png" />
     <style>
+      * { box-sizing: border-box; }
+      html { font-size: 16px; }
       :root {
-        color-scheme: dark;
+        {% if theme_settings.color_scheme == 'frost' %}
+          color-scheme: light;
+        {% else %}
+          color-scheme: dark;
+        {% endif %}
 
         /* Color templates */
         {% if theme_settings.color_scheme == 'frost' %}
-          --bg: #041821;
-          --text: #e9fbff;
-          --muted: rgba(233, 251, 255, 0.78);
-          --border: rgba(255,255,255,0.12);
-          --border-strong: rgba(255,255,255,0.17);
-          --glass: rgba(255,255,255,0.055);
-          --glass-strong: rgba(255,255,255,0.085);
-          --focus: rgba(70, 235, 255, 0.30);
-          --focus-border: rgba(70, 235, 255, 0.55);
-          --btn-primary-bg: rgba(70, 235, 255, 0.18);
-          --btn-primary-border: rgba(70, 235, 255, 0.32);
-          --btn-primary-bg-hover: rgba(70, 235, 255, 0.26);
-          --btn-primary-border-hover: rgba(70, 235, 255, 0.42);
-          --grad-1: rgba(70, 235, 255, 0.18);
-          --grad-2: rgba(90, 150, 255, 0.10);
-          --grad-3: rgba(70, 255, 210, 0.08);
+          --bg: #f6fbff;
+          --text: #0a1416;
+          --muted: rgba(10, 20, 22, 0.72);
+          --placeholder: rgba(10, 20, 22, 0.45);
+          --border: rgba(7, 14, 16, 0.14);
+          --border-strong: rgba(7, 14, 16, 0.20);
+          --glass: rgba(255,255,255,0.62);
+          --glass-strong: rgba(255,255,255,0.78);
+          --surface-shine: rgba(255, 255, 255, 0.85);
+          --surface-shadow: rgba(7, 14, 16, 0.10);
+          --on-image-text: rgba(255, 255, 255, 0.98);
+          --on-image-muted: rgba(255, 255, 255, 0.78);
+          --hero-overlay-1: rgba(0,0,0,0.62);
+          --hero-overlay-2: rgba(0,0,0,0.30);
+          --hero-overlay-3: rgba(0,0,0,0.06);
+          --focus: rgba(45, 165, 235, 0.16);
+          --focus-border: rgba(45, 165, 235, 0.42);
+          --btn-primary-bg: rgba(45, 165, 235, 0.12);
+          --btn-primary-border: rgba(45, 165, 235, 0.22);
+          --btn-primary-bg-hover: rgba(45, 165, 235, 0.16);
+          --btn-primary-border-hover: rgba(45, 165, 235, 0.30);
+          --grad-1: rgba(255, 255, 255, 0.72);
+          --grad-2: rgba(180, 235, 255, 0.22);
+          --grad-3: rgba(215, 255, 250, 0.18);
         {% elif theme_settings.color_scheme == 'sunset' %}
-          --bg: #140b15;
+          --bg: #12060a;
           --text: #fff0f6;
           --muted: rgba(255, 240, 246, 0.78);
+          --placeholder: rgba(255, 240, 246, 0.5);
           --border: rgba(255,255,255,0.12);
           --border-strong: rgba(255,255,255,0.17);
           --glass: rgba(255,255,255,0.055);
           --glass-strong: rgba(255,255,255,0.09);
+          --surface-shine: rgba(255, 255, 255, 0.12);
+          --surface-shadow: rgba(0, 0, 0, 0.35);
+          --on-image-text: var(--text);
+          --on-image-muted: var(--muted);
+          /* Warm-tinted shadow on hero imagery */
+          --hero-overlay-1: rgba(46, 12, 6, 0.72);
+          --hero-overlay-2: rgba(46, 12, 6, 0.34);
+          --hero-overlay-3: rgba(46, 12, 6, 0.06);
           --focus: rgba(255, 140, 120, 0.36);
           --focus-border: rgba(255, 140, 120, 0.55);
           --btn-primary-bg: rgba(255, 140, 120, 0.18);
           --btn-primary-border: rgba(255, 140, 120, 0.30);
           --btn-primary-bg-hover: rgba(255, 140, 120, 0.24);
           --btn-primary-border-hover: rgba(255, 140, 120, 0.38);
-          --grad-1: rgba(255, 160, 120, 0.14);
-          --grad-2: rgba(255, 120, 200, 0.10);
-          --grad-3: rgba(255, 210, 120, 0.05);
+          /* Sunset sky: bright gold horizon + hot pink + deep violet */
+          --grad-1: rgba(255, 186, 90, 0.52);
+          --grad-2: rgba(255, 84, 140, 0.38);
+          --grad-3: rgba(140, 70, 210, 0.22);
+          /* Cliff silhouette at the bottom */
+          --cliff: rgba(12, 5, 8, 0.58);
         {% elif theme_settings.color_scheme == 'forest' %}
           --bg: #07140f;
           --text: #e9fff5;
           --muted: rgba(233, 255, 245, 0.78);
+          --placeholder: rgba(233, 255, 245, 0.5);
           --border: rgba(255,255,255,0.12);
           --border-strong: rgba(255,255,255,0.17);
           --glass: rgba(255,255,255,0.055);
           --glass-strong: rgba(255,255,255,0.085);
+          --surface-shine: rgba(255, 255, 255, 0.10);
+          --surface-shadow: rgba(0, 0, 0, 0.35);
+          --on-image-text: var(--text);
+          --on-image-muted: var(--muted);
+          --hero-overlay-1: rgba(0,0,0,0.78);
+          --hero-overlay-2: rgba(0,0,0,0.40);
+          --hero-overlay-3: rgba(0,0,0,0.08);
           --focus: rgba(120, 255, 200, 0.28);
           --focus-border: rgba(120, 255, 200, 0.48);
           --btn-primary-bg: rgba(120, 255, 200, 0.15);
@@ -61,15 +97,73 @@
           --grad-1: rgba(120, 255, 200, 0.12);
           --grad-2: rgba(120, 190, 255, 0.09);
           --grad-3: rgba(120, 255, 160, 0.06);
+        {% elif theme_settings.color_scheme == 'aurora' %}
+          --bg: #070b18;
+          --text: #eef5ff;
+          --muted: rgba(238, 245, 255, 0.78);
+          --placeholder: rgba(238, 245, 255, 0.5);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.17);
+          --glass: rgba(255,255,255,0.055);
+          --glass-strong: rgba(255,255,255,0.09);
+          --surface-shine: rgba(255, 255, 255, 0.12);
+          --surface-shadow: rgba(0, 0, 0, 0.38);
+          --on-image-text: var(--text);
+          --on-image-muted: var(--muted);
+          --hero-overlay-1: rgba(0,0,0,0.78);
+          --hero-overlay-2: rgba(0,0,0,0.40);
+          --hero-overlay-3: rgba(0,0,0,0.08);
+          --focus: rgba(140, 255, 235, 0.22);
+          --focus-border: rgba(140, 255, 235, 0.44);
+          --btn-primary-bg: rgba(140, 255, 235, 0.14);
+          --btn-primary-border: rgba(140, 255, 235, 0.24);
+          --btn-primary-bg-hover: rgba(140, 255, 235, 0.20);
+          --btn-primary-border-hover: rgba(140, 255, 235, 0.34);
+          --grad-1: rgba(140, 255, 235, 0.12);
+          --grad-2: rgba(185, 120, 255, 0.10);
+          --grad-3: rgba(120, 210, 255, 0.07);
+        {% elif theme_settings.color_scheme == 'ember' %}
+          --bg: #150a0a;
+          --text: #fff3eb;
+          --muted: rgba(255, 243, 235, 0.78);
+          --placeholder: rgba(255, 243, 235, 0.5);
+          --border: rgba(255,255,255,0.12);
+          --border-strong: rgba(255,255,255,0.17);
+          --glass: rgba(255,255,255,0.055);
+          --glass-strong: rgba(255,255,255,0.09);
+          --surface-shine: rgba(255, 255, 255, 0.12);
+          --surface-shadow: rgba(0, 0, 0, 0.38);
+          --on-image-text: var(--text);
+          --on-image-muted: var(--muted);
+          --hero-overlay-1: rgba(0,0,0,0.78);
+          --hero-overlay-2: rgba(0,0,0,0.40);
+          --hero-overlay-3: rgba(0,0,0,0.08);
+          --focus: rgba(255, 180, 120, 0.26);
+          --focus-border: rgba(255, 180, 120, 0.44);
+          --btn-primary-bg: rgba(255, 180, 120, 0.16);
+          --btn-primary-border: rgba(255, 180, 120, 0.26);
+          --btn-primary-bg-hover: rgba(255, 180, 120, 0.22);
+          --btn-primary-border-hover: rgba(255, 180, 120, 0.34);
+          --grad-1: rgba(255, 200, 140, 0.12);
+          --grad-2: rgba(255, 120, 120, 0.10);
+          --grad-3: rgba(255, 220, 160, 0.06);
         {% else %}
           /* midnight (default) */
           --bg: #0b1020;
           --text: #e7eaf2;
           --muted: rgba(231, 234, 242, 0.78);
+          --placeholder: rgba(231, 234, 242, 0.5);
           --border: rgba(255,255,255,0.12);
           --border-strong: rgba(255,255,255,0.16);
           --glass: rgba(255,255,255,0.06);
           --glass-strong: rgba(255,255,255,0.085);
+          --surface-shine: rgba(255, 255, 255, 0.10);
+          --surface-shadow: rgba(0, 0, 0, 0.38);
+          --on-image-text: var(--text);
+          --on-image-muted: var(--muted);
+          --hero-overlay-1: rgba(0,0,0,0.78);
+          --hero-overlay-2: rgba(0,0,0,0.40);
+          --hero-overlay-3: rgba(0,0,0,0.08);
           --focus: rgba(120, 160, 255, 0.42);
           --focus-border: rgba(120, 160, 255, 0.45);
           --btn-primary-bg: rgba(120,160,255,0.18);
@@ -80,48 +174,72 @@
           --grad-2: rgba(160,80,255,0.12);
           --grad-3: rgba(80,255,210,0.06);
         {% endif %}
+
+        /* Button glass tokens (derived from theme primitives) */
+        --btn-glass-bg: var(--glass);
+        --btn-glass-bg-hover: var(--glass-strong);
+        --btn-glass-border: var(--border);
+        --btn-glass-border-hover: var(--border-strong);
       }
       body {
         margin: 0;
         font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
           background:
             {% if theme_settings.background_gradients %}
+              {% if theme_settings.color_scheme == 'sunset' %}
+              /* Sunset: low bright horizon + upper sky + dark cliff */
+              radial-gradient(980px 640px at 28% 62%, var(--grad-1), transparent 62%),
+              radial-gradient(1100px 720px at 78% 18%, var(--grad-3), transparent 62%),
+              radial-gradient(900px 640px at 70% 40%, var(--grad-2), transparent 60%),
+              linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 62%, var(--cliff) 100%),
+              {% else %}
               radial-gradient(1200px 800px at 20% 10%, var(--grad-1), transparent),
               radial-gradient(900px 650px at 85% 0%, var(--grad-2), transparent),
               radial-gradient(900px 650px at 60% 100%, var(--grad-3), transparent),
+              {% endif %}
             {% endif %}
             var(--bg);
         color: var(--text);
         line-height: 1.5;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      .container { max-width: 1040px; margin: 0 auto; padding: 28px 16px; }
+      .container { max-width: 1120px; margin: 0 auto; padding: 30px 18px; }
 
       {% if theme_settings.compact_layout %}
       .container { padding: 18px 14px; }
+      .brand-logo-img { height: 48px; }
       {% endif %}
 
       /* Typography */
-      h1, h2, h3 { margin: 0.2em 0 0.6em; letter-spacing: -0.015em; }
-      h1 { font-size: 30px; line-height: 1.15; }
-      h2 { font-size: 18px; margin-top: 18px; }
+      h1, h2, h3 { margin: 0.15em 0 0.55em; letter-spacing: -0.018em; }
+      h1 { font-size: 32px; line-height: 1.12; }
+      h2 { font-size: 19px; margin-top: 18px; }
       h3 { font-size: 15px; }
       p { margin: 0.55em 0; }
       .muted { opacity: 1; color: var(--muted); }
 
       /* Surfaces */
       .glass {
-        background: var(--glass);
-        border: 1px solid var(--border);
+        background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+        border: 1px solid var(--border-strong);
         border-radius: 18px;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        padding: 18px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        padding: 20px;
+        box-shadow:
+          0 1px 0 0 var(--surface-shine) inset,
+          0 18px 44px 0 var(--surface-shadow);
       }
       .card {
-        background: var(--glass);
+        background: linear-gradient(180deg, var(--glass-strong), var(--glass));
         border: 1px solid var(--border);
         border-radius: 16px;
-        padding: 14px;
+        padding: 16px;
+        box-shadow:
+          0 1px 0 0 var(--surface-shine) inset,
+          0 14px 32px 0 var(--surface-shadow);
       }
 
       {% if not theme_settings.glass_effect %}
@@ -137,6 +255,14 @@
         inset: 0;
         pointer-events: none;
         z-index: 999;
+      }
+
+      /* Rain overlay (optional) */
+      #rain-canvas {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 998;
       }
 
       /* Links */
@@ -157,10 +283,15 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 8px 10px;
+        padding: 10px 12px;
         border-radius: 14px;
-        background: rgba(0,0,0,0.55);
-        border: 1px solid var(--border);
+        background: var(--glass-strong);
+        border: 1px solid var(--border-strong);
+      }
+      .brand-logo-img {
+        height: 56px;
+        width: auto;
+        display: block;
       }
       .nav { display:flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
@@ -172,17 +303,35 @@
         gap: 8px;
         padding: 9px 12px;
         border-radius: 999px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid var(--border);
+        background: var(--btn-glass-bg);
+        border: 1px solid var(--btn-glass-border);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: -0.01em;
         text-decoration: none;
         transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
         user-select: none;
+        box-shadow: 0 1px 0 0 var(--surface-shine) inset;
       }
-      .pill:hover, .btn:hover { background: rgba(255,255,255,0.11); border-color: var(--border-strong); text-decoration: none; }
+      .pill:hover, .btn:hover { background: var(--btn-glass-bg-hover); border-color: var(--btn-glass-border-hover); text-decoration: none; }
       .pill:active, .btn:active { transform: translateY(1px); }
+      .pill:focus-visible, .btn:focus-visible {
+        outline: none;
+        border-color: var(--focus-border);
+        box-shadow: 0 0 0 4px var(--focus);
+      }
       button.pill, button.btn { appearance: none; -webkit-appearance: none; font: inherit; color: inherit; cursor: pointer; }
       .btn-primary { background: var(--btn-primary-bg); border-color: var(--btn-primary-border); }
       .btn-primary:hover { background: var(--btn-primary-bg-hover); border-color: var(--btn-primary-border-hover); }
+
+      {% if not theme_settings.glass_effect %}
+      .pill, .btn {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+      }
+      {% endif %}
 
       /* Forms */
       label { font-size: 12px; color: var(--muted); }
@@ -193,11 +342,11 @@
         padding: 10px 12px;
         border-radius: 12px;
         border: 1px solid var(--border);
-        background: rgba(0,0,0,0.18);
+        background: var(--glass);
         color: var(--text);
         outline: none;
       }
-      input::placeholder, textarea::placeholder { color: rgba(231, 234, 242, 0.5); }
+      input::placeholder, textarea::placeholder { color: var(--placeholder); }
       input:focus, select:focus, textarea:focus {
         border-color: var(--focus-border);
         box-shadow: 0 0 0 4px var(--focus);
@@ -215,6 +364,40 @@
       /* Messages */
       .message { padding: 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--glass-strong); }
       .message strong { font-weight: 650; }
+
+      /* Page wrapper */
+      .main { padding: 22px; }
+
+      /* Homepage hero search */
+      .hero-media { position: relative; }
+      .hero-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, var(--hero-overlay-1) 0%, var(--hero-overlay-2) 55%, var(--hero-overlay-3) 100%);
+      }
+      .on-image { color: var(--on-image-text); }
+      .on-image .muted { color: var(--on-image-muted); }
+
+      .hero-search {
+        background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+        border: 1px solid var(--border-strong);
+        border-radius: 16px;
+        padding: 14px;
+      }
+      .hero-search label {
+        color: var(--text);
+        opacity: 0.9;
+      }
+      .hero-search .muted {
+        color: var(--text);
+        opacity: 0.78;
+      }
+      .hero-search input,
+      .hero-search select,
+      .hero-search textarea {
+        background: var(--glass-strong);
+        border-color: var(--border-strong);
+      }
     </style>
   </head>
   <body>
@@ -282,6 +465,74 @@
         })();
       </script>
     {% endif %}
+    {% if theme_settings.rain_effect %}
+      <canvas id="rain-canvas" aria-hidden="true"></canvas>
+      <script>
+        (function () {
+          try {
+            var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduceMotion) return;
+
+            var canvas = document.getElementById('rain-canvas');
+            if (!canvas) return;
+            var ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            function resize() {
+              var dpr = window.devicePixelRatio || 1;
+              canvas.width = Math.floor(window.innerWidth * dpr);
+              canvas.height = Math.floor(window.innerHeight * dpr);
+              canvas.style.width = window.innerWidth + 'px';
+              canvas.style.height = window.innerHeight + 'px';
+              ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+            resize();
+            window.addEventListener('resize', resize);
+
+            var dropCount = Math.min(220, Math.max(90, Math.floor(window.innerWidth / 7)));
+            var drops = [];
+            for (var i = 0; i < dropCount; i++) {
+              drops.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                l: 10 + Math.random() * 16,
+                s: 7 + Math.random() * 10,
+                w: 0.6 + Math.random() * 0.8,
+                o: 0.12 + Math.random() * 0.18
+              });
+            }
+
+            function tick() {
+              ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+              ctx.lineCap = 'round';
+
+              for (var i = 0; i < drops.length; i++) {
+                var d = drops[i];
+                d.y += d.s;
+                d.x += 0.2;
+                if (d.y > window.innerHeight + 30) {
+                  d.y = -30;
+                  d.x = Math.random() * window.innerWidth;
+                }
+                if (d.x > window.innerWidth + 30) d.x = -30;
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(231, 234, 242,' + d.o + ')';
+                ctx.lineWidth = d.w;
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x + 4, d.y + d.l);
+                ctx.stroke();
+              }
+
+              window.requestAnimationFrame(tick);
+            }
+            tick();
+          } catch (e) {
+            // Ignore.
+          }
+        })();
+      </script>
+    {% endif %}
     <div class="container">
       <div class="topbar">
         <a class="brand" href="/" aria-label="Local Services">
@@ -289,7 +540,7 @@
             <img
               src="{% static 'Images/local_services.png' %}"
               alt="Local Services"
-              style="height: 44px; width: auto; display: block;"
+              class="brand-logo-img"
             />
           </span>
         </a>
@@ -313,7 +564,7 @@
         </div>
       </div>
 
-      <main class="glass" style="padding: 20px;">
+      <main class="glass main">
         {% if messages %}
           <div class="stack" style="margin-bottom: 12px;">
             {% for message in messages %}
@@ -324,5 +575,138 @@
         {% block content %}{% endblock %}
       </main>
     </div>
+
+    <script>
+      (function () {
+        function debounce(fn, ms) {
+          var t = null;
+          return function () {
+            var args = arguments;
+            window.clearTimeout(t);
+            t = window.setTimeout(function () { fn.apply(null, args); }, ms);
+          };
+        }
+
+        function getTrimmedValue(form, name) {
+          try {
+            var el = form.querySelector('[name="' + name + '"]');
+            if (!el) return '';
+            return String(el.value || '').trim();
+          } catch (e) {
+            return '';
+          }
+        }
+
+        function hasAnyFilter(form) {
+          var q = getTrimmedValue(form, 'query');
+          var cat = getTrimmedValue(form, 'service_category');
+          var city = getTrimmedValue(form, 'city');
+          var state = getTrimmedValue(form, 'state');
+          var postal = getTrimmedValue(form, 'postal_code');
+          return Boolean(q || cat || city || state || postal);
+        }
+
+        function buildParams(form) {
+          var params = new URLSearchParams();
+          var fields = ['query', 'service_category', 'city', 'state', 'postal_code', 'radius_km'];
+          for (var i = 0; i < fields.length; i++) {
+            var name = fields[i];
+            var v = getTrimmedValue(form, name);
+            if (v) params.set(name, v);
+          }
+          return params;
+        }
+
+        function initLiveSearch(form) {
+          if (!form || form.__liveSearchInit) return;
+          form.__liveSearchInit = true;
+
+          var url = form.getAttribute('data-live-search-url') || '/search/live/';
+          var targetSel = form.getAttribute('data-live-search-target');
+          if (!targetSel) return;
+          var target = document.querySelector(targetSel);
+          if (!target) return;
+
+          var minQuery = parseInt(form.getAttribute('data-live-search-min-query') || '1', 10);
+          if (!isFinite(minQuery) || minQuery < 0) minQuery = 1;
+          var hideWhenEmpty = form.getAttribute('data-live-search-hide-when-empty') === '1';
+
+          var lastReqId = 0;
+          var controller = null;
+
+          function run() {
+            try {
+              var q = getTrimmedValue(form, 'query');
+              var any = hasAnyFilter(form);
+              var hasOtherFilters = any && !q;
+
+              if (!any) {
+                if (hideWhenEmpty) {
+                  target.style.display = 'none';
+                  target.innerHTML = '';
+                }
+                return;
+              }
+
+              if (q && q.length < minQuery && !hasOtherFilters) {
+                if (hideWhenEmpty) {
+                  target.style.display = 'none';
+                  target.innerHTML = '';
+                }
+                return;
+              }
+
+              var params = buildParams(form);
+              var reqId = ++lastReqId;
+
+              if (controller && controller.abort) controller.abort();
+              controller = (window.AbortController ? new AbortController() : null);
+
+              target.style.display = '';
+              target.innerHTML = '<div class="muted" style="margin-top: 10px;">Searching…</div>';
+
+              fetch(url + '?' + params.toString(), {
+                method: 'GET',
+                headers: { 'Accept': 'text/html' },
+                signal: controller ? controller.signal : undefined
+              }).then(function (resp) {
+                if (!resp.ok) throw new Error('Bad response');
+                return resp.text();
+              }).then(function (html) {
+                if (reqId !== lastReqId) return;
+                target.style.display = '';
+                target.innerHTML = html;
+              }).catch(function () {
+                // Ignore (network errors, aborts, etc.).
+              });
+            } catch (e) {
+              // Ignore.
+            }
+          }
+
+          var trigger = debounce(run, 180);
+          form.addEventListener('input', trigger);
+          form.addEventListener('change', trigger);
+
+          // If the page loaded with an existing query/filter state, fetch immediately.
+          if (hasAnyFilter(form)) run();
+        }
+
+        function boot() {
+          try {
+            var forms = document.querySelectorAll('form[data-live-search="1"]');
+            for (var i = 0; i < forms.length; i++) initLiveSearch(forms[i]);
+          } catch (e) {
+            // Ignore.
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', boot);
+        } else {
+          boot();
+        }
+      })();
+    </script>
   </body>
 </html>

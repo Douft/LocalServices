@@ -9,14 +9,14 @@ class ThemeSettingsAdmin(admin.ModelAdmin):
 	form = ThemeSettingsAdminForm
 	list_display = (
 		"color_scheme",
-		"dark_mode",
 		"glass_effect",
 		"background_gradients",
 		"compact_layout",
 		"snow_effect",
+		"rain_effect",
 		"updated_at",
 	)
-	fields = ("color_scheme", "dark_mode", "glass_effect", "background_gradients", "compact_layout", "snow_effect")
+	fields = ("color_scheme", "glass_effect", "background_gradients", "compact_layout", "snow_effect", "rain_effect")
 
 	def has_add_permission(self, request):
 		# Enforce singleton row.

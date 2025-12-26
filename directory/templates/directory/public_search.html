@@ -8,7 +8,7 @@
   <p class="muted">Start typing, then optionally refine with filters.</p>
 
   <div class="card" style="max-width: 720px; margin: 16px auto 0;">
-    <form method="get" style="margin:0;">
+    <form id="public-search-form" method="get" style="margin:0;" data-live-search="1" data-live-search-url="/search/live/" data-live-search-target="#live-providers-results" data-live-search-min-query="1" data-live-search-hide-when-empty="0">
       {{ location_form.latitude }}
       {{ location_form.longitude }}
 
@@ -43,6 +43,10 @@
             <label>Postal code</label>
             {{ location_form.postal_code }}
           </div>
+          <div>
+            <label>Radius</label>
+            {{ location_form.radius_km }}
+          </div>
         </div>
         <div class="spacer-12"></div>
         <div class="muted" style="font-size: 12px;">Tip: allow browser location for nearby results.</div>
@@ -50,10 +54,17 @@
     </form>
   </div>
 
+  <div style="max-width: 980px; margin: 16px auto 0;">
+    <h2 style="margin: 0;">Results</h2>
+    <div id="live-providers-results">
+      {% include "directory/_live_results.html" with providers=providers suggested_providers=suggested_providers external_providers=external_providers external_error=external_error external_source=external_source %}
+    </div>
+  </div>
+
   <script>
     (function () {
       try {
-        var form = document.currentScript && document.currentScript.previousElementSibling;
+        var form = document.getElementById('public-search-form') || (document.currentScript && document.currentScript.previousElementSibling);
         if (!form || !form.querySelector) return;
 
         var latInput = form.querySelector('input[name="latitude"]');
@@ -81,61 +92,4 @@
 
   {% ad_unit "search_inline_1" %}
 
-  {% if external_error %}
-    <div class="glass" style="padding: 14px; margin: 12px 0;">
-      <strong>External results</strong>
-      <div class="muted" style="margin-top: 6px;">{{ external_error }}</div>
-    </div>
-  {% endif %}
-
-  {% if external_providers %}
-    <h2>More results{% if external_source %} ({{ external_source }}){% endif %}</h2>
-    {% if external_source == "OpenStreetMap" %}
-      <p class="muted" style="margin-top:-6px;">Data from OpenStreetMap contributors. Listings may be incomplete.</p>
-    {% elif external_source == "Google Places" %}
-      <p class="muted" style="margin-top:-6px;">Data from Google Places. Results are shown live and not saved to the database.</p>
-    {% else %}
-      <p class="muted" style="margin-top:-6px;">External results.</p>
-    {% endif %}
-    <div style="display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));">
-      {% for p in external_providers %}
-        <div class="glass" style="padding: 14px;">
-          <strong>{{ p.name }}</strong>
-          <div class="muted" style="margin-top: 6px;">{{ p.category }}{% if p.address %} · {{ p.address }}{% endif %}</div>
-          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
-          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  {% if suggested_providers %}
-    <h2>Suggested</h2>
-    <div class="grid">
-      {% for p in suggested_providers %}
-        <div class="card">
-          <strong>{{ p.name }}</strong>
-          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
-          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
-          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-
-  <h2>Providers</h2>
-  {% if providers %}
-    <div class="grid">
-      {% for p in providers %}
-        <div class="card">
-          <strong>{{ p.name }}</strong>
-          <div class="muted" style="margin-top: 6px;">{{ p.category.name }} · {{ p.city }} {{ p.state }} {{ p.postal_code }}</div>
-          {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
-          {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="muted">No providers match your filters yet.</p>
-  {% endif %}
 {% endblock %}

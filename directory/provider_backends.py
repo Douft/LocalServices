@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import time
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass
 from typing import Iterable, Optional
+
+import urllib.error
 
 from django.conf import settings
 from django.core.cache import cache
@@ -80,6 +84,11 @@ class OSMBackend(ProviderBackend):
 
     DEFAULT_RADIUS_KM = 15
 
+    def _cache_key(self, *, prefix: str, payload: dict) -> str:
+        raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+        digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
+        return f"{prefix}:{digest}"
+
     def _headers(self) -> dict[str, str]:
         user_agent = getattr(settings, "OSM_USER_AGENT", "local-services-local-dev")
         return {
@@ -89,16 +98,289 @@ class OSMBackend(ProviderBackend):
 
     def _http_get_json(self, url: str, *, timeout: int = 20) -> object:
         req = urllib.request.Request(url, headers=self._headers(), method="GET")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8")
-        return json.loads(raw)
+        last_err: Exception | None = None
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    raw = resp.read().decode("utf-8")
+                return json.loads(raw)
+            except urllib.error.HTTPError as e:
+                last_err = e
+                if e.code in (429, 502, 503, 504) and attempt == 0:
+                    time.sleep(0.6)
+                    continue
+                raise
+            except urllib.error.URLError as e:
+                last_err = e
+                if attempt == 0:
+                    time.sleep(0.6)
+                    continue
+                raise
+
+        if last_err:
+            raise last_err
+        raise ProviderBackendError("External provider request failed.")
 
     def _http_post_form_json(self, url: str, form: dict[str, str], *, timeout: int = 30) -> object:
         data = urllib.parse.urlencode(form).encode("utf-8")
         req = urllib.request.Request(url, data=data, headers=self._headers(), method="POST")
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            raw = resp.read().decode("utf-8")
-        return json.loads(raw)
+        last_err: Exception | None = None
+        for attempt in range(2):
+            try:
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    raw = resp.read().decode("utf-8")
+                return json.loads(raw)
+            except urllib.error.HTTPError as e:
+                last_err = e
+                if e.code in (429, 502, 503, 504) and attempt == 0:
+                    time.sleep(0.8)
+                    continue
+                raise
+            except urllib.error.URLError as e:
+                last_err = e
+                if attempt == 0:
+                    time.sleep(0.8)
+                    continue
+                raise
+
+        if last_err:
+            raise last_err
+        raise ProviderBackendError("External provider request failed.")
+
+    def _geocode_postal_via_overpass(self, *, postal_code: str, country: str) -> tuple[Optional[float], Optional[float], str]:
+        """Fallback geocode using Overpass when Nominatim can't resolve a postal code.
+
+        For Canada, postal codes are often present on individual OSM objects via
+        addr:postcode even if Nominatim doesn't index the code as a place.
+        """
+
+        cc = (country or "").strip().upper()
+        if cc != "CA":
+            return None, None, ""
+
+        pc = self._normalize_postal_code(postal_code, country=country)
+        if not pc:
+            return None, None, ""
+
+        raw = pc.replace(" ", "")
+        if len(raw) != 6:
+            return None, None, ""
+        # Match both "A1A 1A1" and "A1A1A1".
+        regex = f"^{raw[:3]} ?{raw[3:]}$"
+
+        overpass_url = getattr(settings, "OSM_OVERPASS_URL", "https://overpass-api.de/api/interpreter")
+        query = (
+            "[out:json][timeout:25];"
+            "area[\"ISO3166-1\"=\"CA\"][admin_level=2]->.ca;"
+            "("
+            f"node(area.ca)[\"addr:postcode\"~\"{regex}\"];"
+            f"way(area.ca)[\"addr:postcode\"~\"{regex}\"];"
+            f"relation(area.ca)[\"addr:postcode\"~\"{regex}\"];"
+            ");"
+            "out center 1;"
+        )
+
+        payload = self._http_post_form_json(overpass_url, {"data": query})
+        elements = payload.get("elements") if isinstance(payload, dict) else None
+        if not isinstance(elements, list) or not elements:
+            return None, None, ""
+
+        el = elements[0]
+        if not isinstance(el, dict):
+            return None, None, ""
+
+        lat = el.get("lat")
+        lon = el.get("lon")
+        if lat is None or lon is None:
+            center = el.get("center")
+            if isinstance(center, dict):
+                lat = center.get("lat")
+                lon = center.get("lon")
+
+        try:
+            lat_f = float(lat)
+            lon_f = float(lon)
+        except (TypeError, ValueError):
+            return None, None, ""
+
+        return lat_f, lon_f, f"{pc}, Canada"
+
+    def _normalize_postal_code(self, postal_code: str, *, country: str) -> str:
+        pc = (postal_code or "").strip()
+        if not pc:
+            return ""
+
+        # Basic normalization for Canadian postal codes.
+        if (country or "").upper() == "CA":
+            raw = pc.replace(" ", "").upper()
+            # Expected: A1A1A1
+            if len(raw) == 6:
+                return raw[:3] + " " + raw[3:]
+            return raw
+
+        return pc
+
+    def _infer_ca_province_from_postal(self, postal_code: str) -> str:
+        raw = (postal_code or "").strip().replace(" ", "").upper()
+        if not raw:
+            return ""
+        first = raw[0]
+        mapping = {
+            "A": "Newfoundland and Labrador",
+            "B": "Nova Scotia",
+            "C": "Prince Edward Island",
+            "E": "New Brunswick",
+            "G": "Quebec",
+            "H": "Quebec",
+            "J": "Quebec",
+            "K": "Ontario",
+            "L": "Ontario",
+            "M": "Ontario",
+            "N": "Ontario",
+            "P": "Ontario",
+            "R": "Manitoba",
+            "S": "Saskatchewan",
+            "T": "Alberta",
+            "V": "British Columbia",
+            "X": "Northwest Territories",
+            "Y": "Yukon",
+        }
+        return mapping.get(first, "")
+
+    def _infer_ca_province_abbrev_from_postal(self, postal_code: str) -> str:
+        full = self._infer_ca_province_from_postal(postal_code)
+        mapping = {
+            "Newfoundland and Labrador": "NL",
+            "Nova Scotia": "NS",
+            "Prince Edward Island": "PE",
+            "New Brunswick": "NB",
+            "Quebec": "QC",
+            "Ontario": "ON",
+            "Manitoba": "MB",
+            "Saskatchewan": "SK",
+            "Alberta": "AB",
+            "British Columbia": "BC",
+            "Northwest Territories": "NT",
+            "Nunavut": "NU",
+            "Yukon": "YT",
+        }
+        return mapping.get(full, "")
+
+    def _normalize_ca_province(self, state: str) -> str:
+        s = (state or "").strip()
+        if not s:
+            return ""
+        sl = s.lower()
+        # Common abbreviations and names.
+        table = {
+            "manitoba": "MB",
+            "mb": "MB",
+            "ontario": "ON",
+            "on": "ON",
+            "quebec": "QC",
+            "qc": "QC",
+            "british columbia": "BC",
+            "bc": "BC",
+            "alberta": "AB",
+            "ab": "AB",
+            "saskatchewan": "SK",
+            "sk": "SK",
+            "new brunswick": "NB",
+            "nb": "NB",
+            "nova scotia": "NS",
+            "ns": "NS",
+            "newfoundland and labrador": "NL",
+            "nl": "NL",
+            "prince edward island": "PE",
+            "pe": "PE",
+            "northwest territories": "NT",
+            "nt": "NT",
+            "nunavut": "NU",
+            "nu": "NU",
+            "yukon": "YT",
+            "yt": "YT",
+        }
+        return table.get(sl, s)
+
+    def _country_display_name(self, country: str) -> str:
+        cc = (country or "").strip().upper()
+        if cc == "CA":
+            return "Canada"
+        if cc == "US":
+            return "United States"
+        return cc
+
+    def _ca_expected_province_full(self, state: str) -> str:
+        """Map a Canadian province abbreviation to its full name when possible."""
+
+        ab = self._normalize_ca_province(state)
+        mapping = {
+            "MB": "Manitoba",
+            "ON": "Ontario",
+            "QC": "Quebec",
+            "BC": "British Columbia",
+            "AB": "Alberta",
+            "SK": "Saskatchewan",
+            "NB": "New Brunswick",
+            "NS": "Nova Scotia",
+            "NL": "Newfoundland and Labrador",
+            "PE": "Prince Edward Island",
+            "NT": "Northwest Territories",
+            "NU": "Nunavut",
+            "YT": "Yukon",
+        }
+        return mapping.get(ab, state)
+
+    def _pick_best_nominatim_result(
+        self,
+        payload: object,
+        *,
+        country: str,
+        state: str,
+    ) -> tuple[Optional[float], Optional[float], str]:
+        if not isinstance(payload, list) or not payload:
+            return None, None, ""
+
+        cc = (country or "").strip().lower()
+        st = (state or "").strip()
+
+        expected_prov_full = ""
+        expected_prov_abbrev = ""
+        if cc == "ca" and st:
+            expected_prov_abbrev = self._normalize_ca_province(st)
+            expected_prov_full = self._ca_expected_province_full(expected_prov_abbrev)
+
+        candidates: list[dict] = [p for p in payload if isinstance(p, dict)]
+        for item in candidates:
+            address = item.get("address") if isinstance(item.get("address"), dict) else {}
+
+            if cc:
+                addr_cc = str(address.get("country_code") or "").strip().lower()
+                if not addr_cc or addr_cc != cc:
+                    continue
+
+            if cc == "ca" and (expected_prov_full or expected_prov_abbrev):
+                addr_state = str(address.get("state") or address.get("province") or "").strip()
+                if addr_state:
+                    addr_state_norm = self._normalize_ca_province(addr_state)
+                    if expected_prov_abbrev and addr_state_norm == expected_prov_abbrev:
+                        pass
+                    elif expected_prov_full and addr_state.lower() == expected_prov_full.lower():
+                        pass
+                    else:
+                        continue
+
+            try:
+                lat = float(item.get("lat"))
+                lon = float(item.get("lon"))
+            except (TypeError, ValueError):
+                continue
+
+            display_name = str(item.get("display_name") or "")
+            return lat, lon, display_name
+
+        # If nothing matched constraints, fail closed.
+        return None, None, ""
 
     def _geocode(self, *, city: str, state: str, postal_code: str, country: str) -> tuple[Optional[float], Optional[float], str]:
         nominatim_url = getattr(
@@ -107,84 +389,127 @@ class OSMBackend(ProviderBackend):
             "https://nominatim.openstreetmap.org/search",
         )
 
+        cc = (country or "").strip().lower()
+
+        postal_code = self._normalize_postal_code(postal_code, country=country)
+        city = (city or "").strip()
+        state = (state or "").strip()
+
+        params = {
+            "format": "jsonv2",
+            "limit": "5",
+            "addressdetails": "1",
+        }
+        if len(cc) == 2:
+            params["countrycodes"] = cc
+
+        # Prefer a constrained free-text query for postal codes.
+        # (Structured "postalcode=" lookups are unreliable across providers/regions.)
         parts: list[str] = []
         if postal_code:
             parts.append(postal_code)
+            if not state and (country or "").upper() == "CA":
+                state = self._infer_ca_province_abbrev_from_postal(postal_code) or self._infer_ca_province_from_postal(postal_code)
+            elif (country or "").upper() == "CA":
+                state = self._normalize_ca_province(state)
         if city:
             parts.append(city)
         if state:
             parts.append(state)
         if country:
-            parts.append(country)
+            parts.append(self._country_display_name(country))
 
         q = ", ".join([p for p in parts if p]).strip()
         if not q:
             return None, None, ""
-
-        params = {
-            "format": "jsonv2",
-            "q": q,
-            "limit": "1",
-        }
+        params["q"] = q
         contact_email = getattr(settings, "OSM_CONTACT_EMAIL", "")
         if contact_email:
             params["email"] = contact_email
 
         url = f"{nominatim_url}?{urllib.parse.urlencode(params)}"
         payload = self._http_get_json(url)
-        if not isinstance(payload, list) or not payload:
-            return None, None, ""
+        lat, lon, display_name = self._pick_best_nominatim_result(payload, country=country, state=state)
+        if lat is None or lon is None:
+            # Fallback: sometimes adding the full province name helps more than the abbreviation.
+            if postal_code and (country or "").upper() == "CA":
+                prov_full = self._infer_ca_province_from_postal(postal_code)
+                if prov_full and prov_full not in q:
+                    params["q"] = f"{postal_code}, {prov_full}, {self._country_display_name(country)}"
+                    url = f"{nominatim_url}?{urllib.parse.urlencode(params)}"
+                    payload = self._http_get_json(url)
+                    lat, lon, display_name = self._pick_best_nominatim_result(payload, country=country, state=prov_full)
 
-        first = payload[0]
-        try:
-            lat = float(first.get("lat"))
-            lon = float(first.get("lon"))
-        except (TypeError, ValueError):
-            return None, None, ""
+            if lat is None or lon is None:
+                # Final fallback: use Overpass to locate any object with the postal code.
+                if postal_code and (country or "").upper() == "CA" and not city:
+                    lat, lon, display = self._geocode_postal_via_overpass(postal_code=postal_code, country=country)
+                    if lat is not None and lon is not None:
+                        return lat, lon, display
 
-        display_name = str(first.get("display_name") or "")
+                return None, None, ""
+
         return lat, lon, display_name
 
-    def _build_overpass_query(self, *, lat: float, lon: float, radius_m: int, tags: Iterable[tuple[str, str]]):
-        tag_filters = "".join([f"[\"{k}\"=\"{v}\"]" for k, v in tags])
-        return (
-            "[out:json][timeout:25];("
-            f"node(around:{radius_m},{lat},{lon}){tag_filters};"
-            f"way(around:{radius_m},{lat},{lon}){tag_filters};"
-            f"relation(around:{radius_m},{lat},{lon}){tag_filters};"
-            ");out center 30;"
-        )
+    def _build_overpass_query(
+        self,
+        *,
+        lat: float,
+        lon: float,
+        radius_m: int,
+        tag_groups: Iterable[Iterable[tuple[str, str]]],
+    ):
+        parts: list[str] = []
+        for group in tag_groups:
+            tag_filters = "".join([f"[\"{k}\"=\"{v}\"]" for k, v in group])
+            parts.append(f"node(around:{radius_m},{lat},{lon}){tag_filters};")
+            parts.append(f"way(around:{radius_m},{lat},{lon}){tag_filters};")
+            parts.append(f"relation(around:{radius_m},{lat},{lon}){tag_filters};")
 
-    def _category_to_osm_tags(self, category: Optional[ServiceCategory]) -> list[tuple[str, str]]:
+        body = "".join(parts)
+        return f"[out:json][timeout:25];({body});out center 120;"
+
+    def _category_to_osm_tag_groups(self, category: Optional[ServiceCategory]) -> list[list[tuple[str, str]]]:
         if not category:
             return []
         slug = (category.slug or "").lower()
         name = (category.name or "").lower()
 
         key = slug or name
-        mapping: dict[str, list[tuple[str, str]]] = {
-            "plumber": [("craft", "plumber")],
-            "electrician": [("craft", "electrician")],
-            "locksmith": [("craft", "locksmith")],
-            "mechanic": [("shop", "car_repair")],
-            "hvac": [("craft", "hvac")],
-            "handyman": [("craft", "handyman")],
-            "appliance-repair": [("craft", "appliance_repair")],
-            "appliance-repair-1": [("craft", "appliance_repair")],
-            "appliance-repair-2": [("craft", "appliance_repair")],
+        mapping: dict[str, list[list[tuple[str, str]]]] = {
+            "plumber": [[("craft", "plumber")]],
+            "electrician": [[("craft", "electrician")]],
+            "locksmith": [[("craft", "locksmith")]],
+            # Mechanics/auto shops are tagged in multiple ways; use OR groups.
+            "mechanic": [
+                [("shop", "car_repair")],
+                [("amenity", "car_repair")],
+                [("craft", "car_repair")],
+                [("service", "vehicle_repair")],
+            ],
+            "hvac": [[("craft", "hvac")]],
+            "handyman": [[("craft", "handyman")]],
+            "appliance-repair": [[("craft", "appliance_repair")]],
+            "appliance-repair-1": [[("craft", "appliance_repair")]],
+            "appliance-repair-2": [[("craft", "appliance_repair")]],
         }
 
         # Fallback heuristics
         if "plumb" in key:
-            return [("craft", "plumber")]
+            return [[("craft", "plumber")]]
         if "electric" in key:
-            return [("craft", "electrician")]
+            return [[("craft", "electrician")]]
         if "lock" in key:
-            return [("craft", "locksmith")]
+            return [[("craft", "locksmith")]]
         if "mechan" in key or "auto" in key:
-            return [("shop", "car_repair")]
+            return [
+                [("shop", "car_repair")],
+                [("amenity", "car_repair")],
+                [("craft", "car_repair")],
+                [("service", "vehicle_repair")],
+            ]
         if "hvac" in key:
-            return [("craft", "hvac")]
+            return [[("craft", "hvac")]]
 
         return mapping.get(key, [])
 
@@ -210,14 +535,27 @@ class OSMBackend(ProviderBackend):
         country: str,
         radius_km: int,
     ) -> list[ProviderResult]:
-        tags = self._category_to_osm_tags(category)
-        if not tags:
+        tag_groups = self._category_to_osm_tag_groups(category)
+        if not tag_groups:
             return []
 
         radius_km = radius_km or getattr(settings, "OSM_DEFAULT_RADIUS_KM", self.DEFAULT_RADIUS_KM)
         radius_m = int(radius_km) * 1000
 
-        cache_key = f"osm:providers:{category.slug if category else 'all'}:{query_text}:{city}:{state}:{postal_code}:{country}:{radius_km}".lower()
+        # NOTE: Keep versioned to avoid stale cached wrong locations.
+        # Use a hashed key to avoid cache backends (e.g., memcached) rejecting characters.
+        cache_key = self._cache_key(
+            prefix="osm:v4:providers",
+            payload={
+                "category": (category.slug if category else "all"),
+                "query_text": query_text,
+                "city": city,
+                "state": state,
+                "postal_code": postal_code,
+                "country": country,
+                "radius_km": int(radius_km),
+            },
+        )
         cached = cache.get(cache_key)
         if cached is not None:
             return cached
@@ -225,7 +563,10 @@ class OSMBackend(ProviderBackend):
         lat, lon, _display = self._geocode(city=city, state=state, postal_code=postal_code, country=country)
         if lat is None or lon is None:
             cache.set(cache_key, [], timeout=60 * 10)
-            return []
+            loc_hint = "city + province" if (country or "").strip().upper() == "CA" else "city/state"
+            raise ProviderBackendError(
+                f"Couldn't locate that location for external results. Please add {loc_hint} (or allow device location)."
+            )
 
         overpass_url = getattr(
             settings,
@@ -233,8 +574,15 @@ class OSMBackend(ProviderBackend):
             "https://overpass-api.de/api/interpreter",
         )
 
-        query = self._build_overpass_query(lat=lat, lon=lon, radius_m=radius_m, tags=tags)
-        payload = self._http_post_form_json(overpass_url, {"data": query})
+        query = self._build_overpass_query(lat=lat, lon=lon, radius_m=radius_m, tag_groups=tag_groups)
+        try:
+            payload = self._http_post_form_json(overpass_url, {"data": query})
+        except urllib.error.HTTPError as e:
+            if getattr(e, "code", None) in (429, 502, 503, 504):
+                raise ProviderBackendError("External provider is temporarily busy. Please try again.")
+            raise
+        except urllib.error.URLError:
+            raise ProviderBackendError("External provider is temporarily unavailable.")
 
         results: list[ProviderResult] = []
         elements = payload.get("elements") if isinstance(payload, dict) else None

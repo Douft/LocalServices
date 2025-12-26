@@ -20,6 +20,8 @@ class ThemeSettings(models.Model):
 		FROST = "frost", "Frost"
 		SUNSET = "sunset", "Sunset"
 		FOREST = "forest", "Forest"
+		AURORA = "aurora", "Aurora"
+		EMBER = "ember", "Ember"
 
 	color_scheme = models.CharField(
 		max_length=32,
@@ -41,6 +43,10 @@ class ThemeSettings(models.Model):
 	snow_effect = models.BooleanField(
 		default=False,
 		help_text="If enabled, shows a subtle falling-snow effect.",
+	)
+	rain_effect = models.BooleanField(
+		default=False,
+		help_text="If enabled, shows a subtle falling-rain effect.",
 	)
 
 	updated_at = models.DateTimeField(auto_now=True)

@@ -10,11 +10,11 @@ class ThemeSettingsAdminForm(forms.ModelForm):
 		model = ThemeSettings
 		fields = (
 			"color_scheme",
-			"dark_mode",
 			"glass_effect",
 			"background_gradients",
 			"compact_layout",
 			"snow_effect",
+			"rain_effect",
 		)
 		widgets = {
 			"color_scheme": forms.RadioSelect,

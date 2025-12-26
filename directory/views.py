@@ -4,15 +4,86 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Value
+from django.db.models.functions import Replace, Upper
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_GET
 
 from accounts.models import UserProfile
 from analyticsapp.models import SearchEvent, UsageAction, UsageEvent
 
 from .forms import LocationForm, ServiceSearchForm
-from .models import ServiceProvider
+from .models import ServiceCategory, ServiceProvider
 from .provider_backends import ProviderBackendError, get_provider_backend
+
+
+def _infer_category_from_query(query_text: str) -> tuple[ServiceCategory | None, bool]:
+	"""Infer category from a free-text query.
+
+	Returns (category, consume_query). When consume_query is True, the query text
+	was interpreted as the category itself (e.g. "plumbing"), so applying a
+	name-contains filter would wrongly hide results.
+	"""
+
+	qt = (query_text or "").strip()
+	if not qt:
+		return None, False
+
+	qs = ServiceCategory.objects.filter(is_active=True)
+
+	exact = qs.filter(name__iexact=qt).first()
+	if exact:
+		return exact, True
+
+	ql = qt.lower()
+	keyword_to_slug: list[tuple[str, str]] = [
+		("plumb", "plumber"),
+		("electric", "electrician"),
+		("lock", "locksmith"),
+		("mechan", "mechanic"),
+		("auto", "mechanic"),
+		("hvac", "hvac"),
+		("heat", "hvac"),
+		("cool", "hvac"),
+		("handy", "handyman"),
+		("appliance", "appliance-repair"),
+		("roof", "roofing"),
+		("landscap", "landscaping"),
+		("clean", "cleaning"),
+		("move", "moving"),
+	]
+	for key, slug in keyword_to_slug:
+		if key in ql:
+			cat = qs.filter(slug__iexact=slug).first() or qs.filter(name__iexact=slug.replace("-", " ")).first()
+			if cat:
+				return cat, True
+
+	# If there's a single obvious match, infer it.
+	contains = list(qs.filter(name__icontains=qt).order_by("sort_order", "name")[:2])
+	if len(contains) == 1:
+		return contains[0], False
+
+	return None, False
+
+
+def _apply_location_filters(*, providers, postal_code: str, city: str, state: str):
+	pc = (postal_code or "").strip()
+	if pc:
+		pc_norm = pc.replace(" ", "").upper()
+		if pc_norm:
+			# Match regardless of spaces/case in DB (e.g. "R5G1J8" vs "R5G 1J8").
+			providers = providers.annotate(_pc_norm=Upper(Replace("postal_code", Value(" "), Value(""))))
+			providers = providers.filter(_pc_norm=pc_norm)
+		else:
+			providers = providers.filter(postal_code__iexact=pc)
+		return providers
+
+	ci = (city or "").strip()
+	st = (state or "").strip()
+	if ci and st:
+		providers = providers.filter(city__iexact=ci, state__iexact=st)
+	return providers
 
 
 def home(request):
@@ -96,6 +167,7 @@ def public_search(request):
 	city = ""
 	state = ""
 	postal_code = ""
+	radius_km = 100
 
 	external_providers = []
 	external_error = ""
@@ -110,6 +182,11 @@ def public_search(request):
 		city = (location_form.cleaned_data.get("city") or "").strip()
 		state = (location_form.cleaned_data.get("state") or "").strip()
 		postal_code = (location_form.cleaned_data.get("postal_code") or "").strip()
+		raw_radius = (location_form.cleaned_data.get("radius_km") or "").strip()
+		try:
+			radius_km = int(raw_radius or 100)
+		except Exception:
+			radius_km = 100
 		raw_lat = (location_form.cleaned_data.get("latitude") or "").strip()
 		raw_lon = (location_form.cleaned_data.get("longitude") or "").strip()
 
@@ -133,16 +210,25 @@ def public_search(request):
 			city, state = profile.city, profile.state
 
 	# Apply filters.
+	had_query = bool(query_text)
+	if not selected_category and query_text:
+		inferred, consume_query = _infer_category_from_query(query_text)
+		if inferred:
+			selected_category = inferred
+			if consume_query:
+				query_text = ""
+
 	if selected_category:
 		providers = providers.filter(category=selected_category)
 
-	if postal_code:
-		providers = providers.filter(postal_code=postal_code)
-	elif city and state:
-		providers = providers.filter(city__iexact=city, state__iexact=state)
+	providers = _apply_location_filters(providers=providers, postal_code=postal_code, city=city, state=state)
 
 	if query_text:
-		providers = providers.filter(name__icontains=query_text)
+		providers = providers.filter(
+			Q(name__icontains=query_text)
+			| Q(description__icontains=query_text)
+			| Q(category__name__icontains=query_text)
+		)
 
 	# Log searches when the user actually submits/loads query params (including geolocation auto-submit).
 	if request.GET:
@@ -155,7 +241,7 @@ def public_search(request):
 			postal_code=postal_code,
 		)
 
-		# External search is only meaningful when we have both category and a location.
+		# External search is only meaningful when we have both a category and a location.
 		if selected_category and (postal_code or (city and state)):
 			try:
 				backend = get_provider_backend()
@@ -167,7 +253,7 @@ def public_search(request):
 					state=state,
 					postal_code=postal_code,
 					country="CA",
-					radius_km=15,
+					radius_km=radius_km,
 				)
 			except ProviderBackendError as e:
 				external_error = str(e)
@@ -185,6 +271,98 @@ def public_search(request):
 			"search_form": search_form,
 			"suggested_providers": suggested,
 			"providers": regular,
+			"external_providers": external_providers,
+			"external_error": external_error,
+			"external_source": external_source,
+		},
+	)
+
+
+@require_GET
+def live_search(request):
+	"""Live (AJAX) search results for local providers.
+
+	This endpoint intentionally does NOT log SearchEvent and does not call external
+	provider backends (to avoid excessive requests while typing).
+	"""
+
+	search_form = ServiceSearchForm(request.GET)
+	location_form = LocationForm(request.GET)
+
+	providers = ServiceProvider.objects.filter(is_active=True)
+	selected_category = None
+	query_text = ""
+	city = ""
+	state = ""
+	postal_code = ""
+	radius_km = 100
+
+	if search_form.is_valid():
+		selected_category = search_form.cleaned_data.get("service_category")
+		query_text = (search_form.cleaned_data.get("query") or "").strip()
+
+	if location_form.is_valid():
+		city = (location_form.cleaned_data.get("city") or "").strip()
+		state = (location_form.cleaned_data.get("state") or "").strip()
+		postal_code = (location_form.cleaned_data.get("postal_code") or "").strip()
+		raw_radius = (location_form.cleaned_data.get("radius_km") or "").strip()
+		try:
+			radius_km = int(raw_radius or 100)
+		except Exception:
+			radius_km = 100
+
+	had_query = bool(query_text)
+	category_explicit = bool(request.GET.get("service_category"))
+	if not selected_category and query_text:
+		inferred, consume_query = _infer_category_from_query(query_text)
+		if inferred:
+			selected_category = inferred
+			if consume_query:
+				query_text = ""
+
+	if selected_category:
+		providers = providers.filter(category=selected_category)
+
+	providers = _apply_location_filters(providers=providers, postal_code=postal_code, city=city, state=state)
+
+	if query_text:
+		providers = providers.filter(
+			Q(name__icontains=query_text)
+			| Q(description__icontains=query_text)
+			| Q(category__name__icontains=query_text)
+		)
+
+	providers = providers.order_by("name")[:12]
+
+	external_providers = []
+	external_error = ""
+	external_source = ""
+
+	# Optional external results for live search: only when user is actively typing
+	# or explicitly selected a category, and location is present.
+	if selected_category and (postal_code or (city and state)) and (had_query or category_explicit):
+		try:
+			backend = get_provider_backend()
+			external_source = getattr(backend, "source_label", "")
+			external_providers = backend.search(
+				category=selected_category,
+				query_text=query_text,
+				city=city,
+				state=state,
+				postal_code=postal_code,
+				country="CA",
+				radius_km=radius_km,
+			)
+		except ProviderBackendError as e:
+			external_error = str(e)
+		except Exception:
+			external_error = "External provider search is temporarily unavailable."
+
+	return render(
+		request,
+		"directory/_live_results.html",
+		{
+			"providers": providers,
 			"external_providers": external_providers,
 			"external_error": external_error,
 			"external_source": external_source,
@@ -230,14 +408,28 @@ def dashboard(request):
 		if selected_category:
 			providers = providers.filter(category=selected_category)
 
-		# Simple location match: prefer ZIP; else city/state.
-		if profile.postal_code:
-			providers = providers.filter(postal_code=profile.postal_code)
-		elif profile.city and profile.state:
-			providers = providers.filter(city__iexact=profile.city, state__iexact=profile.state)
+		# Simple location match: prefer postal code; else city/state.
+		providers = _apply_location_filters(
+			providers=providers,
+			postal_code=profile.postal_code,
+			city=profile.city,
+			state=profile.state,
+		)
+
+		if not selected_category and query_text:
+			inferred, consume_query = _infer_category_from_query(query_text)
+			if inferred:
+				selected_category = inferred
+				providers = providers.filter(category=selected_category)
+				if consume_query:
+					query_text = ""
 
 		if query_text:
-			providers = providers.filter(name__icontains=query_text)
+			providers = providers.filter(
+				Q(name__icontains=query_text)
+				| Q(description__icontains=query_text)
+				| Q(category__name__icontains=query_text)
+			)
 
 		# Log the search (requested services)
 		SearchEvent.objects.create(

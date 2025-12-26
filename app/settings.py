@@ -31,7 +31,12 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-local-dev-only")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
+# Note: Django validates the Host header without the port, so allow the IP itself (not "ip:port").
+# If your LAN IP changes, either update this default list or set ALLOWED_HOSTS in `.env`.
+ALLOWED_HOSTS = env.list(
+    "ALLOWED_HOSTS",
+    default=["127.0.0.1", "localhost", "192.168.100.100", "192.168.0.100"],
+)
 
 # Render sets this to your public hostname (e.g. localservices.onrender.com)
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default="")

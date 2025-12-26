@@ -25,3 +25,7 @@ db.sqlite3
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Local backups
+backup/
+*.zip
