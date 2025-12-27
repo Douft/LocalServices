@@ -5,97 +5,348 @@
 {% block title %}Local Services{% endblock %}
 
 {% block content %}
-  <div class="glass" style="padding: 0; overflow: hidden;">
-    <div class="hero-media">
+  <style>
+    /* Home-only polish: reuse base theme primitives; no new color system */
+    /* Hide the global topbar on the homepage (nav is embedded in hero). */
+    .topbar { display: none; }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .home-hero {
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .home-hero-media {
+      position: relative;
+      display: grid;
+      min-height: 420px;
+    }
+
+    .home-hero-media img {
+      grid-area: 1 / 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: clamp(440px, 46vh, 560px);
+      object-fit: cover;
+      filter: saturate(0.98) contrast(1.02);
+      transform: scale(1.02);
+    }
+
+    .home-hero-overlay {
+      grid-area: 1 / 1;
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, var(--hero-overlay-1) 0%, var(--hero-overlay-2) 58%, var(--hero-overlay-3) 100%),
+        radial-gradient(900px 520px at 22% 22%, rgba(255,255,255,0.10), transparent 65%);
+    }
+
+    .home-hero-navwrap {
+      grid-area: 1 / 1;
+      z-index: 2;
+      align-self: start;
+      justify-self: stretch;
+      padding: 12px;
+      pointer-events: none;
+    }
+
+    .home-hero-nav {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow:
+        0 1px 0 0 var(--surface-shine) inset,
+        0 18px 44px 0 var(--surface-shadow);
+    }
+
+    .home-hero-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--on-image-text);
+    }
+
+    .home-hero-brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-mark-bg);
+      border: 1px solid var(--brand-mark-border);
+    }
+
+    .home-hero-brand-mark img {
+      width: auto;
+      height: auto;
+      max-width: 28px;
+      max-height: 28px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .home-hero-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 560px) {
+      .home-hero-nav { justify-content: center; }
+      .home-hero-brand { display: none; }
+      .home-hero-links { justify-content: center; }
+    }
+
+    .home-hero-inner {
+      grid-area: 1 / 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 18px;
+      z-index: 1;
+    }
+
+    .home-hero-grid {
+      width: 100%;
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .home-hero-grid { grid-template-columns: 1fr; }
+      .home-hero-media img { min-height: clamp(520px, 62vh, 680px); }
+    }
+
+    @media (max-height: 740px) {
+      .home-hero-inner { padding: 14px; }
+      .home-hero-media { min-height: 360px; }
+    }
+
+    .home-title {
+      margin: 0;
+      text-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+
+    .home-subtitle {
+      margin-top: 10px;
+      color: var(--on-image-muted);
+      text-shadow: 0 18px 52px rgba(0,0,0,0.55);
+      max-width: 64ch;
+    }
+
+    .home-glass-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .home-panel {
+      padding: 16px;
+      background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow:
+        0 1px 0 0 var(--surface-shine) inset,
+        0 18px 44px 0 var(--surface-shadow);
+    }
+
+    .home-panel form { position: relative; }
+
+    @media (max-width: 620px) {
+      .home-panel form > div[style*="display:flex"] {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .home-panel form > div[style*="display:flex"] > div:last-child {
+        width: 100%;
+      }
+      .home-panel form > div[style*="display:flex"] > div:last-child .btn {
+        width: 100%;
+      }
+    }
+
+    /* Live results: keep it readable and prevent hero overflow */
+    #home-live-results {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      max-height: min(360px, 45vh);
+      overflow: auto;
+      scrollbar-gutter: stable;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #home-live-results h3 {
+      margin: 10px 0 0;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+    }
+
+    #home-live-results .grid {
+      gap: 10px;
+    }
+
+    #home-live-results > :first-child {
+      margin-top: 0 !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      /* keep motion minimal */
+    }
+  </style>
+
+  <div class="glass home-hero">
+    <div class="home-hero-media">
       <img
         src="{% static 'Images/banner.png' %}"
         alt="Local services"
-        style="display:block; width:100%; height: auto; object-fit: cover;"
       />
-      <div class="hero-overlay"></div>
-      <div style="position:absolute; inset:0; display:flex; align-items:center; padding: 18px;" class="on-image">
-        <div style="max-width: 560px;">
-          <h1 style="margin:0;">Find local services fast</h1>
-          <p class="muted" style="margin-top: 10px;">Search by category and location</p>
-          <div class="spacer-12"></div>
+      <div class="home-hero-overlay"></div>
 
-          <form method="get" action="/search/" style="margin: 0;" autocomplete="off" data-live-search="1" data-live-search-url="/search/live/" data-live-search-target="#home-live-results" data-live-search-min-query="2" data-live-search-hide-when-empty="1">
-            {% if location_form %}
-              {{ location_form.latitude }}
-              {{ location_form.longitude }}
+      <div class="home-hero-navwrap" aria-label="Primary navigation">
+        <div class="home-hero-nav">
+          <a class="home-hero-brand" href="/" aria-label="Local Services home">
+            <span class="home-hero-brand-mark" aria-hidden="true">
+              <img src="{% static 'Images/local_services.png' %}" alt="" />
+            </span>
+            <span class="visually-hidden">Local Services</span>
+          </a>
+          <div class="home-hero-links">
+            <a class="pill" href="/">Home</a>
+            <a class="pill" href="/search/">Search</a>
+            {% if user.is_authenticated %}
+              <a class="pill" href="/dashboard/">Dashboard</a>
+              <form method="post" action="/accounts/logout/" style="display:inline; margin: 0;">
+                {% csrf_token %}
+                <button class="pill" type="submit">Logout</button>
+              </form>
+            {% else %}
+              <a class="pill" href="/accounts/login/">Login</a>
+              <a class="pill btn-primary" href="/accounts/register/">Register</a>
             {% endif %}
-            <div class="hero-search">
-              <div style="display:flex; gap: 10px; align-items: end;">
-                <div style="flex: 1;">
-                  <label>Search</label>
-                  {% if search_form %}
-                    {{ search_form.query }}
-                  {% else %}
-                    <input type="text" name="query" placeholder="plumber, mechanic, locksmith…" />
-                  {% endif %}
-                </div>
-                <div>
-                  <button class="btn btn-primary" type="submit">Search</button>
-                </div>
-              </div>
+          </div>
+        </div>
+      </div>
 
-              <div class="spacer-8"></div>
-              <details>
-                <summary class="muted" style="cursor:pointer;">Filters</summary>
-                <div class="spacer-12"></div>
-                <div class="form-grid">
-                  <div>
-                    <label>Category</label>
+      <div class="home-hero-inner on-image">
+        <div class="home-hero-grid">
+          <div>
+            <h1 class="home-title">Find local services fast</h1>
+            <p class="home-subtitle">Search by category and location — with live results as you type.</p>
+            <div class="spacer-12"></div>
+
+            <div class="home-panel">
+              <form
+                method="get"
+                action="/search/"
+                style="margin: 0;"
+                autocomplete="off"
+                data-live-search="1"
+                data-live-search-url="/search/live/"
+                data-live-search-target="#home-live-results"
+                data-live-search-min-query="2"
+                data-live-search-hide-when-empty="1"
+              >
+                {% if location_form %}
+                  {{ location_form.latitude }}
+                  {{ location_form.longitude }}
+                {% endif %}
+
+                <div style="display:flex; gap: 10px; align-items: end;">
+                  <div style="flex: 1;">
+                    <label>Search</label>
                     {% if search_form %}
-                      {{ search_form.service_category }}
+                      {{ search_form.query }}
                     {% else %}
-                      <select name="service_category"><option value="">All services</option></select>
+                      <input type="text" name="query" placeholder="plumber, mechanic, locksmith…" />
                     {% endif %}
                   </div>
+                  <div>
+                    <button class="btn btn-primary" type="submit">Search</button>
+                  </div>
                 </div>
-              </details>
 
-              <div id="home-live-results" style="display:none;"></div>
+                <div class="spacer-8"></div>
+                <details>
+                  <summary class="muted" style="cursor:pointer;">Filters</summary>
+                  <div class="spacer-12"></div>
+                  <div class="form-grid">
+                    <div>
+                      <label>Category</label>
+                      {% if search_form %}
+                        {{ search_form.service_category }}
+                      {% else %}
+                        <select name="service_category"><option value="">All services</option></select>
+                      {% endif %}
+                    </div>
+                  </div>
+                </details>
+
+                <div id="home-live-results" style="display:none;"></div>
+              </form>
+
+              <div class="spacer-12"></div>
+              <div class="row">
+                <a class="btn btn-primary" href="/search/">Open full search</a>
+                {% if user.is_authenticated %}
+                  <a class="btn" href="/dashboard/">Go to dashboard</a>
+                {% else %}
+                  <a class="btn" href="/accounts/register/">Create account</a>
+                  <a class="btn" href="/accounts/login/">Log in</a>
+                {% endif %}
+              </div>
             </div>
-          </form>
-
-          <div class="spacer-12"></div>
-          <div class="row">
-            <a class="btn btn-primary" href="/search/">Search now</a>
-            <a class="btn" href="/accounts/register/">Create account</a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="grid" style="margin-top: 14px;">
-    <div class="card">
-      <strong>Popular services</strong>
-      <div class="muted" style="margin-top: 6px;">Mechanic, plumber, electrician, locksmith…</div>
-    </div>
-    <div class="card">
-      <strong>Get started</strong>
-      <div class="muted" style="margin-top: 6px;">Create an account to save your location — or search without logging in.</div>
-      <div class="spacer-12"></div>
-      <div class="row">
-        <a class="btn btn-primary" href="/search/">Search now</a>
-        <a class="btn btn-primary" href="/accounts/register/">Create account</a>
-        <a class="btn" href="/accounts/login/">Log in</a>
-      </div>
-    </div>
-    {% if user.is_staff %}
-      <div class="card">
-        <strong>Admin</strong>
-        <div class="muted" style="margin-top: 6px;">Manage providers, ads, theme, and view reports.</div>
-        <div class="spacer-12"></div>
-        <div class="row">
-          <a class="btn" href="/admin/">Open admin</a>
-          <a class="btn" href="/admin/reports/">View reports</a>
-        </div>
-      </div>
-    {% endif %}
-  </div>
+  <div class="spacer-16"></div>
 
   {% ad_unit "home_inline_1" %}
+
+  <div class="spacer-16"></div>
+  <div class="grid">
+    <div class="card" style="padding: 16px;">
+      <strong>Popular services</strong>
+      <div class="muted" style="margin-top: 6px;">Mechanic, plumber, electrician, locksmith, HVAC, handyman…</div>
+    </div>
+    <div class="card" style="padding: 16px;">
+      <strong>Suggested providers</strong>
+      <div class="muted" style="margin-top: 6px;">Admins can curate “Suggested” results with ranking to keep the best options visible.</div>
+    </div>
+    <div class="card" style="padding: 16px;">
+      <strong>External providers</strong>
+      <div class="muted" style="margin-top: 6px;">Default backend is OpenStreetMap; Google Places can be enabled server-side for paid lookup.</div>
+    </div>
+  </div>
 {% endblock %}

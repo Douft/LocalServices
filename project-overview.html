@@ -3,333 +3,1529 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Local Services — Project Overview</title>
+    <meta name="description" content="Standalone project overview for Local Services — a Django-based local service finder with search, external provider backends, analytics, theming, and gentle ads." />
+    <title>Local Services — Standalone Project Overview</title>
+
     <style>
-      :root { color-scheme: dark; }
+      :root {
+        color-scheme: dark;
+
+        /* Forest glass theme (standalone showcase) */
+        --bg: #06110d;
+        --bg-2: #071a12;
+        --text: rgba(233, 255, 245, 0.94);
+        --muted: rgba(233, 255, 245, 0.74);
+        --faint: rgba(233, 255, 245, 0.52);
+
+        --glass: rgba(255, 255, 255, 0.06);
+        --glass-2: rgba(255, 255, 255, 0.09);
+        --border: rgba(233, 255, 245, 0.14);
+        --border-2: rgba(233, 255, 245, 0.22);
+
+        --shadow: rgba(0, 0, 0, 0.42);
+        --shine: rgba(255, 255, 255, 0.10);
+
+        --accent: rgba(120, 255, 200, 0.92);
+        --accent-2: rgba(120, 190, 255, 0.90);
+        --accent-3: rgba(140, 120, 255, 0.85);
+
+        --danger: rgba(255, 160, 120, 0.90);
+        --warn-bg: rgba(255, 190, 120, 0.10);
+        --warn-border: rgba(255, 190, 120, 0.22);
+
+        --radius-xl: 22px;
+        --radius-lg: 18px;
+        --radius-md: 14px;
+
+        --container: 1180px;
+
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: auto; }
       body {
         margin: 0;
-        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        background: radial-gradient(1200px 800px at 20% 10%, rgba(80,140,255,0.16), transparent),
-                    radial-gradient(1000px 700px at 80% 0%, rgba(160,80,255,0.12), transparent),
-                    #0b1020;
-        color: #e7eaf2;
-        line-height: 1.5;
+        font-family: var(--sans);
+        color: var(--text);
+        line-height: 1.55;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background:
+          radial-gradient(1200px 800px at 10% 10%, rgba(120, 255, 200, 0.10), transparent 60%),
+          radial-gradient(900px 700px at 80% 0%, rgba(120, 190, 255, 0.08), transparent 58%),
+          radial-gradient(900px 700px at 70% 100%, rgba(140, 120, 255, 0.06), transparent 60%),
+          linear-gradient(180deg, var(--bg), var(--bg-2));
+        min-height: 100vh;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
-      .wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px; }
-      .glass {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 18px;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
+
+      /* Subtle moving glow */
+      .bg-orb {
+        position: fixed;
+        inset: -20vh -20vw;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.75;
+        filter: blur(0px);
+        transform: translateZ(0);
+      }
+      .bg-orb::before,
+      .bg-orb::after {
+        content: "";
+        position: absolute;
+        width: 62vmax;
+        height: 62vmax;
+        border-radius: 999px;
+        background: radial-gradient(circle at 30% 30%, rgba(120, 255, 200, 0.18), transparent 55%);
+        mix-blend-mode: screen;
+        animation: floaty 18s ease-in-out infinite;
+      }
+      .bg-orb::after {
+        width: 56vmax;
+        height: 56vmax;
+        top: 18vh;
+        left: 52vw;
+        background: radial-gradient(circle at 30% 30%, rgba(120, 190, 255, 0.14), transparent 58%);
+        animation-duration: 22s;
+      }
+      @keyframes floaty {
+        0% { transform: translate(6vw, 5vh) scale(1.00); }
+        50% { transform: translate(2vw, 10vh) scale(1.08); }
+        100% { transform: translate(6vw, 5vh) scale(1.00); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        .bg-orb::before,
+        .bg-orb::after { animation: none; }
+      }
+
+      a { color: inherit; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      code, pre, kbd { font-family: var(--mono); }
+      kbd {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.05);
+      }
+
+      .container {
+        position: relative;
+        z-index: 1;
+        max-width: var(--container);
+        margin: 0 auto;
         padding: 18px;
+        height: 100vh;
+        height: 100dvh;
+        display: flex;
+        flex-direction: column;
       }
-      h1, h2, h3 { margin: 0.2em 0 0.6em; }
-      h1 { font-size: 28px; }
-      h2 { font-size: 18px; margin-top: 22px; }
-      p { margin: 0.5em 0; }
-      .muted { opacity: 0.85; }
-      .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+      /* When vertical space is tight, reduce padding a bit so panels fit cleanly. */
+      @media (max-height: 820px) {
+        .container { padding: 12px; }
+        .hero-inner { padding: 16px; }
+      }
+
+      /* Glass primitives */
+      .glass {
+        background: linear-gradient(180deg, var(--glass-2), var(--glass));
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow:
+          0 1px 0 0 var(--shine) inset,
+          0 18px 52px 0 var(--shadow);
+      }
+      .card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+        border: 1px solid rgba(233,255,245,0.12);
+        border-radius: var(--radius-lg);
+        box-shadow:
+          0 1px 0 0 rgba(255,255,255,0.08) inset,
+          0 14px 36px 0 var(--shadow);
+      }
+
+      .pad-xl { padding: 22px; }
+      .pad-lg { padding: 18px; }
+      .pad-md { padding: 14px; }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+      .row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .spacer-8 { height: 8px; }
+      .spacer-12 { height: 12px; }
+      .spacer-18 { height: 18px; }
+      .hr {
+        height: 1px;
+        background: rgba(233,255,245,0.12);
+        margin: 20px 0;
+      }
+      .muted { color: var(--muted); }
+      .faint { color: var(--faint); }
+
+      /* Typography */
+      h1, h2, h3 {
+        margin: 0.12em 0 0.55em;
+        letter-spacing: -0.02em;
+      }
+      h1 { font-size: clamp(28px, 2.6vw, 40px); line-height: 1.12; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em; color: rgba(233,255,245,0.78); }
+      p { margin: 0.55em 0; }
+      ul, ol { margin: 0.6em 0 0.6em 1.15em; }
+      li { margin: 0.28em 0; }
+
+      /* Navbar */
+      .nav {
+        position: sticky;
+        top: 10px;
+        z-index: 20;
+        margin-bottom: 12px;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 999px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 240px;
+      }
+      .mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid rgba(233,255,245,0.16);
+        background:
+          radial-gradient(circle at 30% 30%, rgba(120,255,200,0.35), transparent 58%),
+          radial-gradient(circle at 70% 20%, rgba(120,190,255,0.22), transparent 55%),
+          rgba(255,255,255,0.05);
+        box-shadow:
+          0 1px 0 0 rgba(255,255,255,0.10) inset,
+          0 14px 32px 0 rgba(0,0,0,0.38);
+      }
+      .brand-title {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+      .brand-title strong { font-size: 13px; letter-spacing: -0.01em; }
+      .brand-title span { font-size: 12px; color: var(--muted); }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(233,255,245,0.14);
+        background: rgba(255,255,255,0.055);
+        transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+        user-select: none;
+      }
+      .pill:hover {
+        transform: translateY(-1px);
+        background: rgba(255,255,255,0.075);
+        border-color: rgba(233,255,245,0.22);
+      }
+      .pill:active { transform: translateY(0px) scale(0.99); }
+
+      .pill.primary {
+        border-color: rgba(120,255,200,0.26);
+        background: rgba(120,255,200,0.12);
+      }
+      .pill.primary:hover {
+        background: rgba(120,255,200,0.18);
+        border-color: rgba(120,255,200,0.36);
+      }
+
+      .pill.small { padding: 7px 10px; font-size: 12px; }
+
+      .nav a.active {
+        border-color: rgba(120,255,200,0.40);
+        background: rgba(120,255,200,0.16);
+      }
+
+      /* Hero */
+      .hero {
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        background:
+          radial-gradient(900px 520px at 16% 20%, rgba(120,255,200,0.12), transparent 62%),
+          radial-gradient(820px 560px at 86% 0%, rgba(120,190,255,0.10), transparent 58%),
+          radial-gradient(820px 560px at 70% 120%, rgba(140,120,255,0.08), transparent 60%);
+        opacity: 1;
+        pointer-events: none;
+      }
+
+      .hero-inner {
+        position: relative;
+        padding: 22px;
+      }
+      .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(233,255,245,0.14);
+        background: rgba(255,255,255,0.05);
+        color: rgba(233,255,245,0.88);
+        font-size: 12px;
+      }
+      .badge b { color: rgba(120,255,200,0.95); font-weight: 700; }
+
+      .hero-menu {
+        margin-top: 14px;
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      }
+      .tabbtn {
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(233,255,245,0.14);
+        background: rgba(255,255,255,0.055);
+        color: var(--text);
+        cursor: pointer;
+        transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+        text-align: left;
+      }
+      .tabbtn:hover {
+        transform: translateY(-1px);
+        background: rgba(255,255,255,0.075);
+        border-color: rgba(233,255,245,0.22);
+      }
+      .tabbtn:active { transform: translateY(0px) scale(0.995); }
+      .tabbtn[aria-selected="true"] {
+        border-color: rgba(120,255,200,0.40);
+        background: rgba(120,255,200,0.14);
+      }
+      .tabbtn .label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .tabbtn .label strong { font-size: 13px; letter-spacing: -0.01em; }
+      .tabbtn .label span { font-size: 12px; color: var(--muted); }
+      .tabbtn .arrow {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid rgba(233,255,245,0.14);
+        background: rgba(0,0,0,0.16);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+      }
+      .tabbtn[aria-selected="true"] .arrow {
+        transform: translateX(2px);
+        border-color: rgba(120,255,200,0.30);
+        background: rgba(120,255,200,0.10);
+      }
+
+      /* Details (expandable, default collapsed) */
+      details {
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(233,255,245,0.12);
+        background: rgba(255,255,255,0.04);
+        padding: 12px 12px;
+      }
+      details + details { margin-top: 10px; }
+      details > summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        font-weight: 650;
+        color: rgba(233,255,245,0.92);
+      }
+      details > summary::-webkit-details-marker { display: none; }
+      .chev {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        border: 1px solid rgba(233,255,245,0.14);
+        background: rgba(255,255,255,0.045);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+      }
+      details[open] .chev { transform: rotate(90deg); background: rgba(120,255,200,0.12); border-color: rgba(120,255,200,0.24); }
+      details .content { margin-top: 10px; color: var(--muted); }
+
       pre {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.12);
-        border-radius: 14px;
+        margin: 10px 0 0;
         padding: 12px;
+        border-radius: var(--radius-md);
+        border: 1px solid rgba(233,255,245,0.12);
+        background: rgba(0, 0, 0, 0.22);
         overflow: auto;
       }
-      .pill {
-        display:inline-block;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        margin-right: 6px;
-        margin-bottom: 6px;
+
+      .callout {
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(120,255,200,0.20);
+        background: rgba(120,255,200,0.08);
+        padding: 12px 12px;
       }
-      .hr { height: 1px; background: rgba(255,255,255,0.12); margin: 18px 0; }
-      ul { margin: 0.5em 0 0.5em 1.1em; }
-      li { margin: 0.25em 0; }
-      a { color: inherit; text-decoration: underline; }
-      .warning {
-        background: rgba(255, 170, 80, 0.10);
-        border: 1px solid rgba(255, 170, 80, 0.22);
-        border-radius: 14px;
-        padding: 12px;
+      .callout.warn {
+        border-color: var(--warn-border);
+        background: var(--warn-bg);
+      }
+
+      /* Dashboard panel */
+      .dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 0;
+        flex: 1 1 auto;
+      }
+      .panel {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        border-radius: var(--radius-xl);
+        padding-bottom: 2px;
+      }
+      .panel-inner { padding: 18px; }
+
+      /* Active section switching */
+      .section {
+        display: none;
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      .section.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0px);
+        animation: panelIn 240ms ease-out;
+      }
+      @keyframes panelIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0px); }
+      }
+
+      .section-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .section-head .hint { font-size: 12px; color: var(--faint); }
+
+      @media (prefers-reduced-motion: reduce) {
+        .section.active { animation: none; }
+        .tabbtn, .pill { transition: none; }
+        .tabbtn:hover { transform: none; }
+      }
+
+      footer {
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--faint);
       }
     </style>
   </head>
+
   <body>
-    <div class="wrap">
-      <div class="glass">
-        <h1>Local Services — Project Overview</h1>
-        <p class="muted">A service-finder site where users discover local providers (mechanics, plumbers, electricians, locksmiths, etc.). This document explains what’s implemented, how “requested” vs “used” services are tracked, and how to run/deploy.</p>
+    <div class="bg-orb" aria-hidden="true"></div>
 
-        <div class="grid" style="margin-top: 14px;">
-          <div class="glass" style="padding: 14px;">
-            <strong>Stack</strong>
-            <div class="muted" style="margin-top: 6px;">
-              Django 5 (Python), SQLite (dev), Django Admin (operations), simple HTML templates.
+    <div class="container">
+      <div class="nav">
+        <div class="glass nav-inner">
+          <div class="brand">
+            <div class="mark" aria-hidden="true"></div>
+            <div class="brand-title">
+              <strong>Local Services</strong>
+              <span>Standalone project overview & training</span>
             </div>
           </div>
-          <div class="glass" style="padding: 14px;">
-            <strong>Primary goals</strong>
-            <div style="margin-top: 6px;">
-              <span class="pill">Local discovery</span>
-              <span class="pill">User login area</span>
-              <span class="pill">Admin oversight</span>
-              <span class="pill">Gentle ads</span>
-              <span class="pill">SEO readiness</span>
-            </div>
-          </div>
-          <div class="glass" style="padding: 14px;">
-            <strong>Environment</strong>
-            <div class="muted" style="margin-top: 6px;">Local dev now; intended hosting on Render with a persistent disk for the database.</div>
+          <div class="nav-links">
+            <button class="pill small primary" type="button" id="expandAllBtn" title="Expand all details">Expand all</button>
+            <button class="pill small" type="button" id="collapseAllBtn" title="Collapse all details">Collapse</button>
           </div>
         </div>
-
-        <div class="hr"></div>
-
-        <h2>What’s implemented</h2>
-        <ul>
-          <li><strong>Service directory data model</strong>: service categories and providers, including “Suggested” providers with ranking.</li>
-          <li><strong>User profiles</strong>: stores user location (city/state/zip and optional lat/lng) + preferences.</li>
-          <li><strong>Analytics foundation</strong>: event tables for “requested” services (SearchEvent) and “used” providers (UsageEvent), with an admin report view that summarizes traffic and top locations.</li>
-          <li><strong>Consent + privacy</strong>: a first-load privacy notice asks visitors to accept/decline analytics; analytics events are only recorded after acceptance. A <code>/privacy/</code> page describes what’s tracked.</li>
-          <li><strong>Theme settings</strong>: admin-controlled site look (multiple color schemes, gradients, compact layout, glass effect) and optional seasonal overlays (snow + rain).</li>
-          <li><strong>Gentle ads foundation</strong>: ad units with placements and scheduling (kept intentionally small and non-intrusive).</li>
-          <li><strong>External provider backends</strong>: a pluggable “free-first, paid-later” integration for finding additional businesses by location (OpenStreetMap now; Google Places supported as a switchable backend).</li>
-          <li><strong>Public search + live results</strong>: users can search without logging in, with live results (AJAX) as they type and a selectable search radius.</li>
-          <li><strong>Geolocation defaulting</strong>: on the public search page, if no location is provided, the browser can populate lat/lng and the server reverse-geocodes into city/state/postal to avoid manual entry.</li>
-          <li><strong>Admin panel</strong>: manage categories/providers/ads/theme, configure provider backend settings, inspect analytics tables, and view staff reports at <code>/admin/reports/</code>.</li>
-          <li><strong>Seed tooling</strong>: commands to seed starter categories + demo providers; demo-only startup flags can auto-create an admin user and seed data on deploy.</li>
-        </ul>
-
-        <h2>Search UX (local + external)</h2>
-        <ul>
-          <li><strong>Live search</strong>: <code>/search/live/</code> returns an HTML fragment used to update the results list while typing.</li>
-          <li><strong>Radius</strong>: users can select 10/25/50/100 km; this radius is passed to external lookups.</li>
-          <li><strong>External providers</strong>: for “More results”, OpenStreetMap (Nominatim + Overpass) is used; tagging patterns are handled for better coverage (e.g. mechanic/auto repair uses multiple tag types).</li>
-          <li><strong>Location safety</strong>: geocoding is constrained to the requested country and avoids returning results from the wrong region.</li>
-        </ul>
-
-        <h2>Free-first local business lookup (OSM now, Google later)</h2>
-        <p class="muted">To stay legal and scalable, the project supports external “provider backends”. The default backend uses OpenStreetMap services (Nominatim + Overpass). Google Places is supported as an alternative backend. You can switch backends either via the Admin panel (recommended) or environment variables.</p>
-        <div class="grid">
-          <div class="glass" style="padding: 14px;">
-            <h3 style="margin-top:0; font-size: 16px;">Default: OpenStreetMap</h3>
-            <ul>
-              <li>Free-first approach (with rate limits).</li>
-              <li>Configured via Admin → <strong>Provider settings</strong> → Provider backend = OpenStreetMap (or <code>PROVIDER_BACKEND=OSM</code>).</li>
-              <li>Recommended: set <code>OSM_USER_AGENT</code> and optional <code>OSM_CONTACT_EMAIL</code>.</li>
-            </ul>
-          </div>
-          <div class="glass" style="padding: 14px;">
-            <h3 style="margin-top:0; font-size: 16px;">Later: Google Places</h3>
-            <ul>
-              <li>Paid API (pay-as-you-go, monthly credit may apply depending on current Google policy).</li>
-              <li>Configured via Admin → <strong>Provider settings</strong> (or <code>PROVIDER_BACKEND=GOOGLE</code> + <code>GOOGLE_MAPS_API_KEY</code>).</li>
-              <li>To keep costs down, the implementation uses Places Text Search and avoids extra details calls by default.</li>
-            </ul>
-          </div>
-        </div>
-
-        <h2>Google API key setup (for external local businesses)</h2>
-        <p class="muted">The exact Google UI changes over time, but the overall steps are consistent. You’ll be using Google Maps Platform and the Places API. This project calls Google from the server (Django), not from the browser.</p>
-        <ul>
-          <li><strong>Create a Google Cloud project</strong> (or reuse an existing one).</li>
-          <li><strong>Enable billing</strong> for the project (required for most Places usage).</li>
-          <li><strong>Enable the Places API</strong> (and any relevant “Places” SKU/API Google currently uses for Text Search).</li>
-          <li><strong>Create an API key</strong> in “APIs & Services” → Credentials.</li>
-          <li><strong>Restrict the key</strong>:
-            <ul>
-              <li><strong>API restrictions</strong>: restrict to Places-related APIs only.</li>
-              <li><strong>Application restrictions</strong>: since requests come from your server, prefer IP restrictions to your server’s outbound IP(s) if possible.</li>
-            </ul>
-          </li>
-          <li><strong>Set quotas/budget alerts</strong> so spend is predictable.</li>
-        </ul>
-        <div class="warning">
-          <strong>Key handling</strong>
-          <p class="muted">This project allows storing the Google key in the database via Admin for convenience. Only trusted admins should have access. Treat it as a secret.</p>
-        </div>
-
-        <h2>Admin panel guide (what each section does)</h2>
-        <p class="muted">The Admin panel is the operational control center. It’s only visible to staff/admin users and is available at <code>/admin/</code>.</p>
-        <ul>
-          <li><strong>Directory → Service categories</strong>
-            <ul>
-              <li><strong>is_active</strong>: hide/show a category in the UI (inactive categories won’t appear in category dropdowns).</li>
-              <li><strong>sort_order</strong>: controls display order (lower numbers appear first).</li>
-              <li><strong>Bulk actions</strong>: quickly mark categories active/inactive.</li>
-            </ul>
-          </li>
-          <li><strong>Directory → Service providers</strong>
-            <ul>
-              <li>These are the “internal” providers stored in your database.</li>
-              <li><strong>is_active</strong>: hide/show a provider.</li>
-              <li><strong>is_suggested</strong> + <strong>suggested_rank</strong>: curated “Suggested” results (lower rank shows higher).</li>
-              <li>Filters allow you to quickly browse by category/state/active/suggested.</li>
-            </ul>
-          </li>
-          <li><strong>Directory → Provider settings</strong>
-            <ul>
-              <li>Select which external backend is used for “More results” (OpenStreetMap or Google Places).</li>
-              <li>Store the <strong>Google Maps API key</strong> and optional region bias (CA/US).</li>
-              <li>This is a single row (“singleton”) so there’s one source of truth.</li>
-            </ul>
-          </li>
-          <li><strong>Theme settings</strong>
-            <ul>
-              <li><strong>Color templates</strong>: choose the overall site palette.</li>
-              <li><strong>background_gradients</strong>: toggles decorative background glow.</li>
-              <li><strong>glass_effect</strong>: toggles blur/glass styling.</li>
-              <li><strong>compact_layout</strong>: reduces padding for a denser layout.</li>
-              <li><strong>snow_effect</strong> / <strong>rain_effect</strong>: seasonal visual effect overlays.</li>
-            </ul>
-          </li>
-          <li><strong>Site ads</strong>
-            <ul>
-              <li>Ad units are small, “gentle” placements with a headline/body/link and priority.</li>
-              <li>Use placements to control where ads appear (home/dashboard inline slots).</li>
-            </ul>
-          </li>
-          <li><strong>Analytics</strong>
-            <ul>
-              <li><strong>SearchEvent</strong> (“requested”): what users are searching for.</li>
-              <li><strong>UsageEvent</strong> (“used”): what users actually interact with (contact/click).</li>
-              <li><strong>Reports</strong>: staff-only summary view at <code>/admin/reports/</code>, including top locations and best-effort visitor counts (unique signed-in users + event totals).</li>
-            </ul>
-          </li>
-        </ul>
-
-        <h2>Privacy / consent</h2>
-        <ul>
-          <li>On first load, visitors see a consent prompt to accept/decline analytics tracking.</li>
-          <li>If declined, analytics events are not recorded (search still works).</li>
-          <li>The <code>/privacy/</code> page describes what is recorded and how to change the choice (clear cookies).</li>
-        </ul>
-
-        <h2>How “services are used” and measured</h2>
-        <div class="grid">
-          <div class="glass" style="padding: 14px;">
-            <h3 style="margin-top:0; font-size: 16px;">Requested services (intent)</h3>
-            <p class="muted">Recorded when a user searches for a service category or types a query.</p>
-            <p><strong>Table:</strong> <code>analyticsapp.SearchEvent</code></p>
-            <p><strong>Use:</strong> "What are people looking for most?"</p>
-          </div>
-          <div class="glass" style="padding: 14px;">
-            <h3 style="margin-top:0; font-size: 16px;">Used services (behavior)</h3>
-            <p class="muted">Recorded when a user interacts with a provider (view, contact, click website).</p>
-            <p><strong>Table:</strong> <code>analyticsapp.UsageEvent</code></p>
-            <p><strong>Use:</strong> "What providers/services are actually being used?"</p>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <h2>Local development: how to run</h2>
-        <p class="muted">These commands assume you are in the project root and using the existing virtual environment.</p>
-        <pre><code>D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py migrate
-      D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py seed_demo
-      D:/Webdesign/local_services/.venv/Scripts/python.exe manage.py runserver 127.0.0.1:8000</code></pre>
-        <p><strong>Admin panel:</strong> <code>/admin/</code></p>
-
-        <div class="warning">
-          <strong>Testing credentials</strong>
-          <p class="muted">A default admin account is created for local testing.</p>
-          <p><code>username: admin</code><br /><code>password: secret</code></p>
-          <p class="muted">Do not use these credentials in production.</p>
-        </div>
-
-        <h2>How admins manage “Suggested” providers</h2>
-        <ul>
-          <li>In Django Admin, edit a provider and enable <strong>is_suggested</strong>.</li>
-          <li>Set <strong>suggested_rank</strong> (lower = more prominent).</li>
-          <li>This supports future revenue options (e.g., promoted placements) while keeping the UX clean.</li>
-        </ul>
-
-        <div class="hr"></div>
-
-        <h2>Deploying on Render (demo + production)</h2>
-        <p class="muted">This project can be deployed on Render as a simple Web Service. For a demo, you can run SQLite without a paid disk (data may reset on redeploy/restart). For something persistent, attach a disk or move to Postgres later.</p>
-
-        <h3 style="margin-top: 10px;">Build &amp; start commands</h3>
-        <p class="muted">These are the recommended commands for Render’s “Build Command” and “Start Command”.</p>
-        <pre><code>Build Command:
-pip install -r requirements.txt &amp;&amp; python manage.py collectstatic --noinput
-
-Start Command:
-python manage.py migrate --noinput &amp;&amp; gunicorn app.wsgi:application --bind 0.0.0.0:$PORT</code></pre>
-
-        <div class="warning" style="margin-top: 12px;">
-          <strong>Why search works locally but not on Render</strong>
-          <p class="muted">Your local database (<code>db.sqlite3</code>) is not committed to git and won’t be present on Render. For a demo deployment, enable auto-seeding (below) or run <code>python manage.py seed_demo</code> once in the Render Shell so categories/providers exist.</p>
-        </div>
-
-        <div class="warning" style="margin-top: 12px;">
-          <strong>Common copy/paste pitfall</strong>
-          <p class="muted">If you copy commands from VS Code or chat, avoid pasting a Markdown link like <code>python [manage.py](...)</code>. Render runs commands via <code>bash -c</code> and the <code>(</code> causes a syntax error. Use plain <code>python manage.py ...</code>.</p>
-        </div>
-
-        <h3 style="margin-top: 16px;">Environment variables (Render → Environment)</h3>
-        <p class="muted">Set these in Render’s Environment UI (not inline in the start command).</p>
-        <ul>
-          <li><strong>Required</strong>
-            <ul>
-              <li><code>SECRET_KEY</code>: a long random value.</li>
-              <li><code>DEBUG</code>: <code>False</code>.</li>
-              <li><code>ALLOWED_HOSTS</code>: include your Render hostname (example: <code>localservices.onrender.com</code>).</li>
-              <li><code>CSRF_TRUSTED_ORIGINS</code>: include the https origin (example: <code>https://localservices.onrender.com</code>).</li>
-            </ul>
-          </li>
-          <li><strong>Recommended</strong>
-            <ul>
-              <li><code>OSM_USER_AGENT</code>: identify your app (don’t set this inline with parentheses in bash; set it as an env var).</li>
-              <li><code>OSM_CONTACT_EMAIL</code>: optional contact email for OpenStreetMap usage.</li>
-            </ul>
-          </li>
-          <li><strong>Optional (demo self-heal)</strong>
-            <ul>
-              <li><code>AUTO_MIGRATE_ON_STARTUP</code>=<code>True</code>: runs migrations during WSGI startup. Useful for demos if you accidentally deploy without a migrate step.</li>
-              <li><code>AUTO_CREATE_DEMO_ADMIN_ON_STARTUP</code>=<code>True</code>: runs <code>ensure_demo_admin</code> on startup (demo-only).</li>
-              <li><code>AUTO_SEED_DEMO_ON_STARTUP</code>=<code>True</code>: runs <code>seed_demo</code> on startup (demo-only).</li>
-            </ul>
-          </li>
-          <li><strong>Optional (database persistence)</strong>
-            <ul>
-              <li><code>SQLITE_PATH</code>: set to the Render disk path (example: <code>/var/data/db.sqlite3</code>) if you attach a disk. Without a disk, SQLite will be ephemeral.</li>
-            </ul>
-          </li>
-          <li><strong>Optional (external providers)</strong>
-            <ul>
-              <li><code>PROVIDER_BACKEND</code>: <code>OSM</code> or <code>GOOGLE</code> (defaults to OSM). Admin → Provider settings can override this choice.</li>
-              <li><code>GOOGLE_MAPS_API_KEY</code>: only needed if using Google Places and not setting the key in Admin → Provider settings.</li>
-            </ul>
-          </li>
-        </ul>
-
-        <h3 style="margin-top: 16px;">Health checks</h3>
-        <p class="muted">If you set a Health Check Path in Render, make sure it points at a real endpoint. If you don’t have a dedicated endpoint yet, use <code>/</code>.</p>
-
-        <h3 style="margin-top: 16px;">Free instance vs disk</h3>
-        <ul>
-          <li><strong>Free (no disk)</strong>: good for a demo; migrations will run and the site will work, but data can reset.</li>
-          <li><strong>With disk</strong>: SQLite data persists across restarts. Set <code>SQLITE_PATH</code> to the mounted disk location.</li>
-        </ul>
-
-        <h2>Security and compliance notes</h2>
-        <ul>
-          <li>Never ship the test admin password to production.</li>
-          <li>Use HTTPS on Render and keep secrets as environment variables.</li>
-          <li>External provider lookups should follow the chosen provider’s Terms (OSM/Overpass usage policies; Google Maps Platform terms if enabled). Results are displayed live and not persisted by default.</li>
-          <li>As SEO features are added, templates should remain accessible (semantic HTML, descriptive titles, and structured data where appropriate).</li>
-        </ul>
-
-        <div class="hr"></div>
-
-        <p class="muted">Last updated: December 26, 2025</p>
       </div>
+
+      <header class="glass hero" id="top">
+        <div class="hero-inner">
+          <h1>Local Services — Project Overview</h1>
+          <p class="muted">
+            A Django-based local service finder where visitors can search for providers by category and location,
+            optionally viewing additional results from external provider sources. This document is a standalone
+            showcase (HTML + CSS + JavaScript in one file) intended for presentations and training.
+          </p>
+
+          <div class="spacer-12"></div>
+          <div class="hero-badges" aria-label="Key technologies">
+            <span class="badge"><b>Django</b> 5.2.9</span>
+            <span class="badge"><b>Python</b> backend</span>
+            <span class="badge"><b>SQLite</b> database (Django ORM)</span>
+            <span class="badge"><b>OSM</b> Nominatim + Overpass (external)</span>
+            <span class="badge"><b>Optional</b> Google Places (server-side)</span>
+            <span class="badge"><b>Admin</b> operations</span>
+            <span class="badge"><b>WhiteNoise</b> static files</span>
+          </div>
+
+          <div class="spacer-18"></div>
+          <div class="grid">
+            <div class="card pad-lg">
+              <h3>What this app does</h3>
+              <div class="muted">
+                Helps users discover local service providers (e.g., plumber, electrician, locksmith, mechanic, HVAC) using:
+                (1) providers stored in our database and (2) optionally, external provider results shown live.
+              </div>
+            </div>
+            <div class="card pad-lg">
+              <h3>How it’s operated</h3>
+              <div class="muted">
+                Admins manage categories, providers, theme, ads, and provider-backend settings via Django Admin.
+                Staff can view summary reports at <span style="color: rgba(120,255,200,0.92)">/admin/reports/</span>.
+              </div>
+            </div>
+            <div class="card pad-lg">
+              <h3>Privacy model</h3>
+              <div class="muted">
+                Analytics events are recorded only after the user accepts the privacy notice.
+                Consent is stored in a cookie named <code>ls_analytics_consent</code>.
+              </div>
+            </div>
+          </div>
+
+          <div class="spacer-12"></div>
+          <div class="hero-menu" role="tablist" aria-label="Overview sections">
+            <button class="tabbtn" type="button" role="tab" aria-selected="true" aria-controls="panel-overview" data-target="overview" id="tab-overview">
+              <span class="label"><strong>Overview</strong><span>What exists and where it lives</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-features" data-target="features" id="tab-features">
+              <span class="label"><strong>Features</strong><span>How every feature works</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-user-guide" data-target="user-guide" id="tab-user-guide">
+              <span class="label"><strong>User guide</strong><span>Training steps and expected behavior</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-admin-guide" data-target="admin-guide" id="tab-admin-guide">
+              <span class="label"><strong>Admin guide</strong><span>Operations and configuration</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-data" data-target="data" id="tab-data">
+              <span class="label"><strong>Data model</strong><span>Tables, fields, and storage</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-providers" data-target="providers" id="tab-providers">
+              <span class="label"><strong>External providers</strong><span>OSM and optional Google Places</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-analytics" data-target="analytics" id="tab-analytics">
+              <span class="label"><strong>Analytics</strong><span>Consent-gated events and reports</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-deployment" data-target="deployment" id="tab-deployment">
+              <span class="label"><strong>Deployment</strong><span>Run locally and deploy on Render</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="tabbtn" type="button" role="tab" aria-selected="false" aria-controls="panel-appendix" data-target="appendix" id="tab-appendix">
+              <span class="label"><strong>Appendix</strong><span>Languages, tools, and notes</span></span>
+              <span class="arrow" aria-hidden="true">›</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="spacer-12"></div>
+
+      <main class="dashboard" aria-label="Content dashboard">
+        <div class="glass panel" id="panel" role="region" aria-label="Selected content">
+          <div class="panel-inner">
+        <!-- OVERVIEW -->
+        <section id="panel-overview" class="section active" data-section="overview" role="tabpanel" aria-labelledby="tab-overview">
+          <div class="section-head">
+            <h2>Overview</h2>
+            <div class="hint">Expandable details start minimized</div>
+          </div>
+          <div>
+            <p class="muted">
+              This overview is based on the actual code in the workspace. All endpoints, behaviors, and data types
+              described here match the current implementation.
+            </p>
+
+            <details>
+              <summary>
+                <span>Core concept: “local providers” + “external providers”</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li><strong>Local providers</strong> are stored in our SQLite database as <code>directory.ServiceProvider</code> rows and are shown in search results immediately.</li>
+                  <li><strong>External providers</strong> are fetched live from an external source (OpenStreetMap by default; Google Places is optional) and shown as “More results”.</li>
+                  <li>External results are <strong>display-only</strong> (not persisted in our database by the provider backend code).</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>High-level page map</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li><code>/</code> — Home (hero search box + live suggestions)</li>
+                  <li><code>/search/</code> — Public search page (no login required)</li>
+                  <li><code>/search/live/</code> — Live results fragment (AJAX)</li>
+                  <li><code>/accounts/register/</code> — Register (Django User)</li>
+                  <li><code>/accounts/login/</code> — Login (Django built-in auth URLs)</li>
+                  <li><code>/dashboard/</code> — Logged-in dashboard (saved location + tracking buttons)</li>
+                  <li><code>/provider/&lt;id&gt;/contact/</code> — “I contacted this provider” tracker (POST)</li>
+                  <li><code>/out/provider/&lt;id&gt;/</code> — Outbound click tracker + redirect</li>
+                  <li><code>/privacy/</code> — Privacy details</li>
+                  <li><code>/admin/</code> — Django admin</li>
+                  <li><code>/admin/reports/</code> — Staff reports dashboard</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- FEATURES -->
+        <section id="panel-features" class="section" data-section="features" role="tabpanel" aria-labelledby="tab-features">
+          <div class="section-head">
+            <h2>Features — How everything works</h2>
+            <div class="hint">Verified against current Django code</div>
+          </div>
+
+          <div class="grid">
+            <div class="glass pad-xl">
+              <h3>Search (public)</h3>
+              <p class="muted">Primary entry point for anonymous visitors.</p>
+
+              <details>
+                <summary>
+                  <span>Search inputs and filters</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li><strong>Query text</strong> — free-text input (e.g., “plumber”, “mechanic”).</li>
+                    <li><strong>Category</strong> — optional dropdown of active categories from the database.</li>
+                    <li><strong>Location</strong> — by <code>postal_code</code>, or by <code>city</code> + <code>state</code>.</li>
+                    <li><strong>Radius</strong> — 10/25/50/100 km; used when calling external provider backends.</li>
+                  </ul>
+                  <div class="callout">
+                    <div><strong>Important:</strong> Location filtering for local DB providers is exact-match:</div>
+                    <ul>
+                      <li>If <code>postal_code</code> is provided, results match postal code (normalized for spaces/case).</li>
+                      <li>Otherwise, if both <code>city</code> and <code>state</code> are provided, results match city + state exactly (case-insensitive).</li>
+                    </ul>
+                  </div>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Category inference from the query (quality-of-life)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    When the user doesn’t explicitly pick a category, the server attempts to infer one from the query.
+                    It checks for an exact category name match and then looks for common keywords (e.g., “plumb”, “electric”, “lock”, “mechan”, “hvac”, “handy”, etc.).
+                  </p>
+                  <p>
+                    If the query text is interpreted as the category itself, the server intentionally avoids applying a “name contains query” filter that would hide legitimate results.
+                  </p>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Geolocation auto-fill on the public search page</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    If the user opens <code>/search/</code> with no location parameters and the browser supports Geolocation,
+                    the page can request the user’s coordinates. If granted, the page submits those coordinates.
+                  </p>
+                  <p>
+                    On the server, if coordinates are present but no textual location was provided, the app performs a best-effort reverse geocode using OpenStreetMap Nominatim reverse endpoint to fill:
+                    <code>city</code>, <code>state</code>, and <code>postal_code</code>.
+                  </p>
+                  <div class="callout warn">
+                    <strong>Note:</strong> Reverse geocoding is best-effort; failures fall back to manual entry.
+                  </div>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Live results (AJAX)</h3>
+              <p class="muted">Powers the “as you type” experience on Home and Search.</p>
+
+              <details>
+                <summary>
+                  <span>How live search is triggered</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    The base layout includes a small JavaScript live-search helper that watches any form marked with
+                    <code>data-live-search="1"</code>. On input/change, it debounces and fetches <code>/search/live/</code> with the current filters.
+                  </p>
+                  <ul>
+                    <li>Home page uses a higher minimum query length (2) and hides results when empty.</li>
+                    <li>Search page uses a minimum query length of 1 and keeps the results area visible.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>What live search returns (and what it does NOT do)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li><strong>Returns</strong> an HTML fragment (server-rendered) that lists matching local providers and may include external providers.</li>
+                    <li><strong>Does not log</strong> <code>analyticsapp.SearchEvent</code> (so typing doesn’t spam analytics tables).</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>When external providers appear during live search</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    Live search can call the external provider backend only when:
+                  </p>
+                  <ul>
+                    <li>a category is selected (or inferred), and</li>
+                    <li>a location is present (postal code, or city + state), and</li>
+                    <li>the user is actively typing (has a query) <em>or</em> explicitly selected a category.</li>
+                  </ul>
+                  <p>
+                    This keeps external calls meaningful while still enabling “More results” when it helps.
+                  </p>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Accounts & dashboard</h3>
+              <p class="muted">For logged-in users who want a saved location and tracked interactions.</p>
+
+              <details>
+                <summary>
+                  <span>Registration and authentication</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>The project uses Django’s default <code>User</code> model.</li>
+                    <li><code>/accounts/register/</code> creates a new user using Django’s <code>UserCreationForm</code> pattern.</li>
+                    <li>Login/logout are provided by Django’s built-in auth URLs under <code>/accounts/</code>.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>UserProfile (saved location)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    A <code>accounts.UserProfile</code> row stores per-user location and preferences (country defaults to <code>CA</code>, plus optional latitude/longitude and a default radius).
+                  </p>
+                  <p>
+                    A profile row is created automatically for new users via a Django signal, and the app also uses <code>get_or_create</code> defensively.
+                  </p>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Dashboard search (and what gets tracked)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>The dashboard reads the user’s saved location and searches local providers near that location.</li>
+                    <li>If the user has consented to analytics (cookie indicates acceptance), submitting a dashboard search logs a <code>SearchEvent</code>.</li>
+                    <li>If the user is actively searching and has a category + location, the dashboard may also fetch external providers.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Provider interaction tracking</h3>
+              <p class="muted">Captures real “usage” actions without sending emails or placing calls.</p>
+
+              <details>
+                <summary>
+                  <span>“I contacted this provider” button</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    On the dashboard, each provider card includes a POST action to:
+                    <code>/provider/&lt;id&gt;/contact/</code>.
+                  </p>
+                  <ul>
+                    <li>This logs a <code>analyticsapp.UsageEvent</code> with action <code>contact</code> if analytics consent was accepted.</li>
+                    <li>It does not call the provider, send an email, or message anyone. It’s an intent/behavior signal.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Outbound website click tracking</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    Provider website links on the dashboard route through:
+                    <code>/out/provider/&lt;id&gt;/</code>.
+                  </p>
+                  <ul>
+                    <li>If the provider has a website URL, the server logs a <code>UsageEvent</code> with action <code>click_website</code> (with consent), then redirects to the provider site.</li>
+                    <li>If a provider has no website URL, the endpoint returns 404.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Theming & gentle ads</h3>
+              <p class="muted">Presentation-focused features controlled in Admin.</p>
+
+              <details>
+                <summary>
+                  <span>Theming (ThemeSettings)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>Theme settings are stored in a singleton-like table <code>theming.ThemeSettings</code>.</li>
+                    <li>A template context processor makes the theme available to templates as <code>theme_settings</code>.</li>
+                    <li>The base template defines color schemes including <strong>Forest</strong>, plus toggles for glass effect, background gradients, compact layout, and optional snow/rain overlays.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Ads (AdUnit)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    “Gentle ads” are small units placed in specific UI slots. The ad template tag selects the top eligible ad by:
+                    placement, enabled flag, schedule window (start/end), and priority.
+                  </p>
+                  <ul>
+                    <li>Implemented placements: <code>home_inline_1</code> and <code>dashboard_inline_1</code>.</li>
+                    <li>Fields include headline, short body, target URL, and optional schedule.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- USER GUIDE -->
+        <section id="panel-user-guide" class="section" data-section="user-guide" role="tabpanel" aria-labelledby="tab-user-guide">
+          <div class="section-head">
+            <h2>User guide (training)</h2>
+            <div class="hint">What to do, what to expect</div>
+          </div>
+          <div>
+            <details>
+              <summary>
+                <span>1) Searching without an account</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ol>
+                  <li>Open <code>/search/</code>.</li>
+                  <li>Type what you need in “Search” (example: <code>plumber</code>).</li>
+                  <li>Optionally open “Filters” to select a category and/or enter city/state or a postal code.</li>
+                  <li>As you type, results can update live via <code>/search/live/</code>.</li>
+                  <li>Press “Search” to load the full results view.</li>
+                </ol>
+                <p>
+                  Results are split into:
+                  <strong>Suggested</strong> (curated local providers),
+                  local providers,
+                  and optionally <strong>More results</strong> from external sources.
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>2) Accepting / declining analytics tracking</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  On first visit, the site shows a privacy notice. Your choice is stored in a cookie:
+                  <code>ls_analytics_consent</code> with value <code>yes</code> or <code>no</code>.
+                </p>
+                <ul>
+                  <li><strong>Accept</strong>: searches and dashboard interaction events can be recorded.</li>
+                  <li><strong>Decline</strong>: search still works, but analytics events are not recorded.</li>
+                </ul>
+                <p>See <code>/privacy/</code> for the user-facing description of what is tracked.</p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>3) Creating an account and using the dashboard</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ol>
+                  <li>Register at <code>/accounts/register/</code> and you will be logged in automatically.</li>
+                  <li>Open <code>/dashboard/</code>.</li>
+                  <li>Set your location (city/state and/or postal code) and click “Save”.</li>
+                  <li>Use the dashboard search to filter by category/query.</li>
+                </ol>
+                <p>
+                  When browsing providers, the “I contacted this provider” button records a usage action (with consent).
+                  Website clicks route through the outbound tracker then redirect.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- ADMIN GUIDE -->
+        <section id="panel-admin-guide" class="section" data-section="admin-guide" role="tabpanel" aria-labelledby="tab-admin-guide">
+          <div class="section-head">
+            <h2>Admin guide (operations)</h2>
+            <div class="hint">What admins can control</div>
+          </div>
+          <div>
+            <p class="muted">Admin features live under <code>/admin/</code> and require staff/superuser permissions.</p>
+
+            <details>
+              <summary>
+                <span>Directory: categories and providers</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li><strong>ServiceCategory</strong>: controls which categories appear in dropdowns (<code>is_active</code>) and their order (<code>sort_order</code>).</li>
+                  <li><strong>ServiceProvider</strong>: stores business listing details plus “Suggested” behavior.</li>
+                  <li><strong>Suggested providers</strong>: enable <code>is_suggested</code> and set <code>suggested_rank</code> (lower ranks appear higher).</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Provider settings: switching external backends</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  External provider behavior is controlled by a singleton table <code>directory.ProviderSettings</code>.
+                  If it is not available (e.g., before migrations), the code falls back to environment configuration.
+                </p>
+                <ul>
+                  <li>Select backend: OpenStreetMap or Google Places.</li>
+                  <li>Store Google API key in the DB (optional override of environment variable).</li>
+                  <li>Set a 2-letter region bias for Google (defaults to CA).</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Reports: what “top requested” vs “top used” actually means</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  Staff reports are available at <code>/admin/reports/</code>.
+                </p>
+                <ul>
+                  <li><strong>Top requested</strong> is based on counts of <code>SearchEvent</code> grouped by category.</li>
+                  <li><strong>Top used</strong> is based on <code>UsageEvent</code> where action is <code>contact</code> or <code>click_website</code>.</li>
+                  <li>“Unique users” is best-effort and counts unique signed-in users across the analytics tables.</li>
+                  <li>Location insights are derived from the location snapshot stored on <code>SearchEvent</code>.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Ads: placements, scheduling, and priority</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li>Ads are controlled by <code>siteads.AdUnit</code> rows.</li>
+                  <li>An ad is eligible when <code>is_enabled</code> is true and it is within the optional time window (<code>starts_at</code> / <code>ends_at</code>).</li>
+                  <li>Within a placement, the ad with the lowest <code>priority</code> is shown first.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- DATA MODEL -->
+        <section id="panel-data" class="section" data-section="data" role="tabpanel" aria-labelledby="tab-data">
+          <div class="section-head">
+            <h2>Data model & database types</h2>
+            <div class="hint">SQLite + Django ORM</div>
+          </div>
+
+          <div>
+            <details>
+              <summary>
+                <span>Database engine and why</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  The project uses <strong>SQLite</strong> via Django’s built-in SQLite backend.
+                  This is configured in Django settings as:
+                  <code>django.db.backends.sqlite3</code>.
+                </p>
+                <p>
+                  In production, the SQLite database location can be changed with the environment variable <code>SQLITE_PATH</code>
+                  (for example, to place the DB on a persistent disk).
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Primary tables (app models)</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li><strong>accounts.UserProfile</strong>: user location + preferences (city/state/postal/country, optional lat/lng, default radius).</li>
+                  <li><strong>directory.ServiceCategory</strong>: category name/slug, active flag, sort order.</li>
+                  <li><strong>directory.ServiceProvider</strong>: provider details (contact, address fields, optional lat/lng), plus “Suggested” flags/rank.</li>
+                  <li><strong>directory.ProviderSettings</strong>: singleton provider-backend configuration (OSM vs Google + optional Google key/region).</li>
+                  <li><strong>analyticsapp.SearchEvent</strong>: search intent (“requested”) with a location snapshot.</li>
+                  <li><strong>analyticsapp.UsageEvent</strong>: provider usage (“contact” / “click_website”) with a location snapshot.</li>
+                  <li><strong>siteads.AdUnit</strong>: ad content, placement, schedule window, priority.</li>
+                  <li><strong>theming.ThemeSettings</strong>: singleton theme selection and toggles.</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Indexing and performance notes</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li>Service providers include indexes to support common filters (by category + postal code, category + city/state, and suggested ranking).</li>
+                  <li>Analytics tables include indexes to support recent-by-time and grouping by category/provider.</li>
+                  <li>External provider results are cached in memory (Django LocMemCache) for short periods to reduce repeated API calls.</li>
+                </ul>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- EXTERNAL PROVIDERS -->
+        <section id="panel-providers" class="section" data-section="providers" role="tabpanel" aria-labelledby="tab-providers">
+          <div class="section-head">
+            <h2>External provider backends (OSM / Google)</h2>
+            <div class="hint">Pluggable provider sources</div>
+          </div>
+
+          <div class="grid">
+            <div class="glass pad-xl">
+              <h3>Default: OpenStreetMap</h3>
+              <p class="muted">Free-first external provider results using public OSM services.</p>
+
+              <details>
+                <summary>
+                  <span>What services are used</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li><strong>Nominatim</strong> is used for geocoding searches.</li>
+                    <li><strong>Overpass</strong> is used for points-of-interest provider lookup.</li>
+                    <li>For Canadian postal codes, there is a fallback strategy that can query Overpass for <code>addr:postcode</code> objects when Nominatim doesn’t resolve a postal code.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Operational requirements (User-Agent / rate limits)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    The OSM backend sets a custom HTTP <code>User-Agent</code> string. For responsible usage, configure:
+                    <code>OSM_USER_AGENT</code> and optionally <code>OSM_CONTACT_EMAIL</code>.
+                  </p>
+                  <p class="faint">
+                    External services can rate-limit requests; the backend includes basic retry behavior on certain HTTP errors.
+                  </p>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Optional: Google Places</h3>
+              <p class="muted">Paid external provider results via Places Text Search.</p>
+
+              <details>
+                <summary>
+                  <span>What the implementation actually calls</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>Uses <strong>Places Text Search</strong> endpoint.</li>
+                    <li>Does not call Place Details by default (to avoid extra cost).</li>
+                    <li>Results include name, formatted address, and coordinates (when provided by Google). Phone/website are not fetched by default.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>How to enable (keys and settings)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>Set backend selection in Admin (Provider Settings) to Google Places, or use env var <code>PROVIDER_BACKEND=GOOGLE</code>.</li>
+                    <li>Provide the API key either in Provider Settings (<code>google_maps_api_key</code>) or via env var <code>GOOGLE_MAPS_API_KEY</code>.</li>
+                    <li>Optionally set Provider Settings <code>google_region</code> (2-letter region; defaults to CA).</li>
+                  </ul>
+                  <div class="callout warn">
+                    <strong>Security note:</strong> Treat API keys as secrets and restrict them appropriately.
+                  </div>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section id="panel-analytics" class="section" data-section="analytics" role="tabpanel" aria-labelledby="tab-analytics">
+          <div class="section-head">
+            <h2>Analytics & privacy</h2>
+            <div class="hint">Consent-gated tracking</div>
+          </div>
+          <div>
+            <details>
+              <summary>
+                <span>Consent mechanism (cookie)</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  The UI displays a privacy notice overlay if the cookie <code>ls_analytics_consent</code> is not yet set.
+                  Clicking Accept stores <code>yes</code>; Decline stores <code>no</code>. The cookie is set for ~180 days.
+                </p>
+                <p class="faint">
+                  Server-side tracking checks this cookie and records events only when it indicates acceptance.
+                </p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Requested vs used: the two analytics tables</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <div class="grid">
+                  <div class="card pad-md">
+                    <strong>SearchEvent (“requested”)</strong>
+                    <div class="spacer-8"></div>
+                    <div class="muted">
+                      Created when a search is submitted on <code>/search/</code> (public) or performed on <code>/dashboard/</code>,
+                      but only after consent is accepted.
+                    </div>
+                  </div>
+                  <div class="card pad-md">
+                    <strong>UsageEvent (“used”)</strong>
+                    <div class="spacer-8"></div>
+                    <div class="muted">
+                      Created when a logged-in user records a contact action or clicks out to a provider website
+                      (again, only after consent is accepted).
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>What reports show</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <ul>
+                  <li>Top requested categories (SearchEvent counts).</li>
+                  <li>Top used providers based on contact + website click events.</li>
+                  <li>Location insights based on user-entered or geo-derived location fields on SearchEvent.</li>
+                </ul>
+                <div class="callout">
+                  <strong>Accuracy note:</strong> Anonymous visitors are not reliably de-duplicated; the reports treat “unique users” as unique signed-in users observed in the event tables.
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- DEPLOYMENT -->
+        <section id="panel-deployment" class="section" data-section="deployment" role="tabpanel" aria-labelledby="tab-deployment">
+          <div class="section-head">
+            <h2>Deployment & operations</h2>
+            <div class="hint">Local dev + Render guidance</div>
+          </div>
+          <div>
+            <details>
+              <summary>
+                <span>Local development (typical commands)</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>From the project root:</p>
+                <pre><code>python manage.py migrate
+python manage.py seed_demo
+python manage.py runserver</code></pre>
+                <p class="faint">On Windows, you may use your venv Python: <code>.venv\Scripts\python.exe manage.py runserver</code></p>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Demo data and demo admin</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  The management command <code>seed_demo</code> is safe to re-run and will:
+                </p>
+                <ul>
+                  <li>Create/update a demo admin user (defaults: <code>admin</code> / <code>secret</code>).</li>
+                  <li>Seed starter categories and demo providers.</li>
+                  <li>Seed a couple of example “gentle ads” for home and dashboard placements.</li>
+                </ul>
+                <div class="callout warn">
+                  <strong>Security:</strong> Never use the demo credentials in real production.
+                </div>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Render deployment essentials (as currently documented)</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p class="muted">The project includes deployment guidance for Render using Gunicorn and WhiteNoise.</p>
+                <pre><code>Build:
+pip install -r requirements.txt && python manage.py collectstatic --noinput
+
+Start:
+gunicorn app.wsgi:application</code></pre>
+                <p>
+                  Recommended environment variables:
+                </p>
+                <ul>
+                  <li><code>SECRET_KEY</code>, <code>DEBUG=False</code>, <code>ALLOWED_HOSTS</code></li>
+                  <li><code>CSRF_TRUSTED_ORIGINS</code> (HTTPS origin)</li>
+                  <li><code>SQLITE_PATH</code> when using a persistent disk (example: <code>/var/data/db.sqlite3</code>)</li>
+                  <li><code>OSM_USER_AGENT</code> (and optional <code>OSM_CONTACT_EMAIL</code>)</li>
+                </ul>
+              </div>
+            </details>
+
+            <details>
+              <summary>
+                <span>Optional demo startup tasks (WSGI)</span>
+                <span class="chev" aria-hidden="true">›</span>
+              </summary>
+              <div class="content">
+                <p>
+                  The WSGI module includes an optional “demo convenience” mechanism that can run on startup,
+                  guarded by environment variables:
+                </p>
+                <ul>
+                  <li><code>AUTO_MIGRATE_ON_STARTUP</code></li>
+                  <li><code>AUTO_CREATE_DEMO_ADMIN_ON_STARTUP</code></li>
+                  <li><code>AUTO_SEED_DEMO_ON_STARTUP</code></li>
+                </ul>
+                <div class="callout warn">
+                  <strong>Important:</strong> Running migrations automatically at import time is not recommended for serious production setups. This exists to make demo deployments more reliable when the platform does not run migrations separately.
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- APPENDIX -->
+        <section id="panel-appendix" class="section" data-section="appendix" role="tabpanel" aria-labelledby="tab-appendix">
+          <div class="section-head">
+            <h2>Appendix</h2>
+            <div class="hint">Languages, tools, and implementation notes</div>
+          </div>
+
+          <div class="grid">
+            <div class="glass pad-xl">
+              <h3>Languages used</h3>
+              <details>
+                <summary>
+                  <span>Programming / markup languages in this repo</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li><strong>Python</strong> — Django backend, models, views, management commands.</li>
+                    <li><strong>HTML</strong> — Django templates and this standalone overview page.</li>
+                    <li><strong>CSS</strong> — styling in templates (inline in base template) and this standalone page.</li>
+                    <li><strong>JavaScript</strong> — browser interactions (live search and consent overlay), plus this page’s standalone UI behavior.</li>
+                    <li><strong>SQL (SQLite)</strong> — underlying storage/query language used by the database engine through Django ORM.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Tools and libraries</h3>
+              <details>
+                <summary>
+                  <span>Core frameworks and what they do</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li><strong>Django 5.2.9</strong>: routing, templates, ORM, authentication, admin interface.</li>
+                    <li><strong>django-environ</strong>: reads environment variables and optional <code>.env</code> file for settings.</li>
+                    <li><strong>WhiteNoise</strong>: serves static files efficiently in production without requiring a separate static server.</li>
+                    <li><strong>Gunicorn</strong> (non-Windows): WSGI server for production deployments.</li>
+                    <li><strong>SQLite</strong>: embedded database used by default.</li>
+                    <li><strong>OpenStreetMap services</strong>: Nominatim and Overpass power free-first external provider results.</li>
+                  </ul>
+                </div>
+              </details>
+            </div>
+
+            <div class="glass pad-xl">
+              <h3>Accuracy & implementation notes</h3>
+              <details>
+                <summary>
+                  <span>What’s intentionally lightweight today</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <ul>
+                    <li>Local provider filtering is deliberately simple (exact matches on postal code or city/state).</li>
+                    <li>External results are display-only and not merged into the local provider database.</li>
+                    <li>Analytics are basic but structured (requested vs used) and intentionally consent-gated.</li>
+                  </ul>
+                </div>
+              </details>
+
+              <details>
+                <summary>
+                  <span>Known placement note (ads)</span>
+                  <span class="chev" aria-hidden="true">›</span>
+                </summary>
+                <div class="content">
+                  <p>
+                    The implemented ad placement choices are <code>home_inline_1</code> and <code>dashboard_inline_1</code>.
+                    If you add new placements, they should be added consistently in the placement enum and templates.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+
+          <div class="spacer-12"></div>
+          <div class="glass pad-xl">
+            <h3>Standalone note</h3>
+            <p class="muted">
+              This file is intentionally self-contained (no external CSS/JS, no network calls, no images).
+              It is safe to copy to a USB drive and open in a browser.
+            </p>
+          </div>
+
+          <footer>
+            <div>Last verified against the codebase: December 27, 2025</div>
+            <div class="faint">Tip: Use “Expand all” when training; use the hero buttons to switch topics.</div>
+          </footer>
+        </section>
+          </div>
+        </div>
+      </main>
     </div>
+
+    <script>
+      (function () {
+        // Expand / collapse all <details> blocks
+        function setAllDetails(open) {
+          var list = document.querySelectorAll('details');
+          for (var i = 0; i < list.length; i++) {
+            if (open) list[i].setAttribute('open', '');
+            else list[i].removeAttribute('open');
+          }
+        }
+
+        function bootExpandControls() {
+          var expandBtn = document.getElementById('expandAllBtn');
+          var collapseBtn = document.getElementById('collapseAllBtn');
+          if (expandBtn) expandBtn.addEventListener('click', function () { setAllDetails(true); });
+          if (collapseBtn) collapseBtn.addEventListener('click', function () { setAllDetails(false); });
+        }
+
+        // Dashboard tabs (hero submenu)
+        function bootTabs() {
+          var buttons = document.querySelectorAll('.tabbtn[data-target]');
+          var sections = document.querySelectorAll('.section[data-section]');
+          var panel = document.getElementById('panel');
+
+          function setActiveSection(key, pushHash) {
+            var found = false;
+            for (var i = 0; i < sections.length; i++) {
+              var isMatch = sections[i].getAttribute('data-section') === key;
+              if (isMatch) found = true;
+              if (isMatch) sections[i].classList.add('active');
+              else sections[i].classList.remove('active');
+            }
+
+            for (var j = 0; j < buttons.length; j++) {
+              var isBtn = buttons[j].getAttribute('data-target') === key;
+              buttons[j].setAttribute('aria-selected', isBtn ? 'true' : 'false');
+              buttons[j].tabIndex = isBtn ? 0 : -1;
+            }
+
+            if (!found) return;
+            if (panel) panel.scrollTop = 0;
+
+            if (pushHash) {
+              try { history.replaceState(null, '', '#' + encodeURIComponent(key)); } catch (e) { location.hash = key; }
+            }
+          }
+
+          function fromHash() {
+            var h = (location.hash || '').replace(/^#/, '').trim();
+            if (!h) return '';
+            try { h = decodeURIComponent(h); } catch (e) {}
+            return h;
+          }
+
+          for (var i2 = 0; i2 < buttons.length; i2++) {
+            buttons[i2].addEventListener('click', function () {
+              var key = this.getAttribute('data-target');
+              if (key) setActiveSection(key, true);
+            });
+
+            buttons[i2].addEventListener('keydown', function (ev) {
+              var keyCode = ev.key || '';
+              if (keyCode !== 'ArrowRight' && keyCode !== 'ArrowLeft' && keyCode !== 'Home' && keyCode !== 'End') return;
+              ev.preventDefault();
+              var list = Array.prototype.slice.call(buttons);
+              var idx = list.indexOf(this);
+              if (idx < 0) return;
+
+              var nextIdx = idx;
+              if (keyCode === 'ArrowRight') nextIdx = (idx + 1) % list.length;
+              if (keyCode === 'ArrowLeft') nextIdx = (idx - 1 + list.length) % list.length;
+              if (keyCode === 'Home') nextIdx = 0;
+              if (keyCode === 'End') nextIdx = list.length - 1;
+
+              list[nextIdx].focus();
+              var k = list[nextIdx].getAttribute('data-target');
+              if (k) setActiveSection(k, true);
+            });
+          }
+
+          var initial = fromHash();
+          if (initial) setActiveSection(initial, false);
+          else setActiveSection('overview', false);
+
+          window.addEventListener('hashchange', function () {
+            var key = fromHash();
+            if (key) setActiveSection(key, false);
+          });
+        }
+
+        function boot() {
+          bootExpandControls();
+          bootTabs();
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+        else boot();
+      })();
+    </script>
   </body>
 </html>
