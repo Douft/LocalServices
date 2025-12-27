@@ -180,7 +180,7 @@ OSM_NOMINATIM_URL = env("OSM_NOMINATIM_URL", default="https://nominatim.openstre
 OSM_OVERPASS_URL = env("OSM_OVERPASS_URL", default="https://overpass-api.de/api/interpreter")
 OSM_USER_AGENT = env("OSM_USER_AGENT", default="local-services-local-dev")
 OSM_CONTACT_EMAIL = env("OSM_CONTACT_EMAIL", default="")
-OSM_DEFAULT_RADIUS_KM = env.int("OSM_DEFAULT_RADIUS_KM", default=15)
+OSM_DEFAULT_RADIUS_KM = env.int("OSM_DEFAULT_RADIUS_KM", default=50)
 
 GOOGLE_MAPS_API_KEY = env("GOOGLE_MAPS_API_KEY", default="")
 

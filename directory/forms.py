@@ -19,8 +19,9 @@ class LocationForm(forms.Form):
             ("25", "25 km"),
             ("50", "50 km"),
             ("100", "100 km"),
+            ("500", "500 km"),
         ],
-        initial="100",
+        initial="50",
     )
 
     # Optional: populated by browser geolocation (public search).

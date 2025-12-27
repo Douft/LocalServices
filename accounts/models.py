@@ -26,7 +26,7 @@ class UserProfile(models.Model):
 	longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
 	default_radius_km = models.PositiveIntegerField(
-		default=15,
+		default=50,
 		help_text="Default search radius (used when we have lat/lng).",
 	)
 	allow_geolocation = models.BooleanField(

@@ -9,12 +9,14 @@
   <h3 style="margin: 14px 0 0;">More results{% if external_source %} ({{ external_source }}){% endif %}</h3>
   <div style="display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 12px;">
     {% for p in external_providers %}
+      {% if p.name and p.phone %}
       <div class="glass" style="padding: 14px;">
         <strong>{{ p.name }}</strong>
         <div class="muted" style="margin-top: 6px;">{{ p.category }}{% if p.address %} · {{ p.address }}{% endif %}</div>
         {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
         {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
       </div>
+      {% endif %}
     {% endfor %}
   </div>
 {% endif %}
@@ -23,12 +25,14 @@
   <h3 style="margin: 14px 0 0;">Suggested</h3>
   <div class="grid" style="margin-top: 12px;">
     {% for p in suggested_providers %}
+      {% if p.name and p.phone %}
       <div class="card">
         <strong>{{ p.name }}</strong>
         <div class="muted" style="margin-top: 6px;">{{ p.category.name }}{% if p.city or p.state or p.postal_code %} · {{ p.city }} {{ p.state }} {{ p.postal_code }}{% endif %}</div>
         {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
         {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
       </div>
+      {% endif %}
     {% endfor %}
   </div>
 {% endif %}
@@ -36,12 +40,14 @@
 {% if providers %}
   <div class="grid" style="margin-top: 12px;">
     {% for p in providers %}
+      {% if p.name and p.phone %}
       <div class="card">
         <strong>{{ p.name }}</strong>
         <div class="muted" style="margin-top: 6px;">{{ p.category.name }}{% if p.city or p.state or p.postal_code %} · {{ p.city }} {{ p.state }} {{ p.postal_code }}{% endif %}</div>
         {% if p.phone %}<div class="muted" style="margin-top: 6px;">Phone: {{ p.phone }}</div>{% endif %}
         {% if p.website %}<div class="muted" style="margin-top: 6px;">Website: <a href="{{ p.website }}" rel="nofollow">{{ p.website }}</a></div>{% endif %}
       </div>
+      {% endif %}
     {% endfor %}
   </div>
 {% else %}

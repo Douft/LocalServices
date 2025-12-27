@@ -655,7 +655,7 @@
 
         function buildParams(form) {
           var params = new URLSearchParams();
-          var fields = ['query', 'service_category', 'city', 'state', 'postal_code', 'radius_km'];
+          var fields = ['query', 'service_category', 'city', 'state', 'postal_code', 'radius_km', 'latitude', 'longitude'];
           for (var i = 0; i < fields.length; i++) {
             var name = fields[i];
             var v = getTrimmedValue(form, name);

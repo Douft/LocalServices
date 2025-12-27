@@ -49,7 +49,7 @@
           </div>
         </div>
         <div class="spacer-12"></div>
-        <div class="muted" style="font-size: 12px;">Tip: allow browser location for nearby results.</div>
+        <div class="muted" style="font-size: 12px;">Tip: allow browser location for nearby results (requires HTTPS or localhost in most browsers).</div>
       </details>
     </form>
   </div>
@@ -71,12 +71,18 @@
         var lonInput = form.querySelector('input[name="longitude"]');
         if (!latInput || !lonInput) return;
 
-        var params = new URLSearchParams(window.location.search);
-        var hasLocation = params.get('postal_code') || (params.get('city') && params.get('state'));
-        var hasCoords = params.get('latitude') && params.get('longitude');
+        // Prefer current form values over URL params, because the server may
+        // default location from a profile without the URL containing those keys.
+        var cityInput = form.querySelector('input[name="city"]');
+        var stateInput = form.querySelector('input[name="state"]');
+        var postalInput = form.querySelector('input[name="postal_code"]');
+
+        var hasLocation = (postalInput && postalInput.value) || ((cityInput && cityInput.value) && (stateInput && stateInput.value));
+        var hasCoords = (latInput && latInput.value) && (lonInput && lonInput.value);
         if (hasLocation || hasCoords) return;
 
         if (!navigator.geolocation) return;
+        if (window.isSecureContext === false) return;
         navigator.geolocation.getCurrentPosition(function (pos) {
           latInput.value = String(pos.coords.latitude);
           lonInput.value = String(pos.coords.longitude);

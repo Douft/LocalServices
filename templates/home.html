@@ -10,6 +10,18 @@
     /* Hide the global topbar on the homepage (nav is embedded in hero). */
     .topbar { display: none; }
 
+    /* The base layout wraps content in a glassy <main>. On the homepage we
+       render our own full-bleed hero + cards, so remove the extra glass layer
+       (it causes cramped/nested borders on mobile). */
+    main.main {
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
     .visually-hidden {
       position: absolute;
       width: 1px;
@@ -117,9 +129,21 @@
     }
 
     @media (max-width: 560px) {
-      .home-hero-nav { justify-content: center; }
+      .home-hero-nav {
+        justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
       .home-hero-brand { display: none; }
-      .home-hero-links { justify-content: center; }
+      .home-hero-links {
+        width: 100%;
+        justify-content: center;
+      }
+      .home-hero-nav .pill {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
     }
 
     .home-hero-inner {
@@ -129,6 +153,17 @@
       align-items: center;
       padding: 18px;
       z-index: 1;
+    }
+
+    @media (max-width: 560px) {
+      /* Reserve space for the floating nav (which wraps on small screens). */
+      .home-hero-inner {
+        align-items: flex-start;
+        padding-top: 132px;
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+      .home-hero-navwrap { padding: 10px; }
     }
 
     .home-hero-grid {
@@ -152,6 +187,13 @@
     .home-title {
       margin: 0;
       text-shadow: 0 20px 60px rgba(0,0,0,0.55);
+    }
+
+    @media (max-width: 560px) {
+      .home-title {
+        font-size: clamp(26px, 7vw, 34px);
+        line-height: 1.08;
+      }
     }
 
     .home-subtitle {
@@ -189,6 +231,13 @@
         width: 100%;
       }
       .home-panel form > div[style*="display:flex"] > div:last-child .btn {
+        width: 100%;
+      }
+
+      .home-panel .row {
+        flex-direction: column;
+      }
+      .home-panel .row .btn {
         width: 100%;
       }
     }
