@@ -22,12 +22,14 @@ from django.templatetags.static import static
 from analyticsapp.views import reports as admin_reports
 
 from directory.views import home
+from .views import privacy
 
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url=static('Images/local_services.png'), permanent=True)),
     path('', home, name='home'),
-    path('admin/', admin.site.urls),
+    path('privacy/', privacy, name='privacy'),
     path('admin/reports/', admin_reports, name='admin_reports'),
+    path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('accounts.urls')),
     path('', include('directory.urls')),

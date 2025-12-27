@@ -4,7 +4,82 @@
 
 {% block content %}
   <h1 style="margin-top:0;">Reports</h1>
-  <p class="muted">Top requested services vs top used providers (contact + website clicks).</p>
+  <p class="muted">Top requested services vs top used providers (contact + website clicks), plus basic analytics.</p>
+
+  <div class="card" style="margin: 14px 0;">
+    <strong>Analytics</strong>
+    <div class="spacer-12"></div>
+    <div class="muted" style="font-size: 13px;">
+      Counts below are based on tracked analytics events (recorded only after a visitor accepts the consent prompt).
+      Anonymous visitors are not reliably de-duplicated, so “visitors” here reflects unique signed-in users + event totals.
+    </div>
+
+    <div class="spacer-12"></div>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div class="card">
+        <strong>Last 30 days</strong>
+        <div class="spacer-12"></div>
+        <div>Unique signed-in users: <strong>{{ unique_users_30 }}</strong></div>
+        <div class="muted" style="margin-top: 6px;">Searchers: {{ unique_search_users_30 }} · Users with usage actions: {{ unique_usage_users_30 }}</div>
+        <div class="muted" style="margin-top: 6px;">Search events: {{ search_events_count_30 }} · Usage events: {{ usage_events_count_30 }}</div>
+      </div>
+
+      <div class="card">
+        <strong>All time</strong>
+        <div class="spacer-12"></div>
+        <div>Unique signed-in users: <strong>{{ unique_users_all }}</strong></div>
+        <div class="muted" style="margin-top: 6px;">Searchers: {{ unique_search_users_all }} · Users with usage actions: {{ unique_usage_users_all }}</div>
+        <div class="muted" style="margin-top: 6px;">Search events: {{ search_events_count_all }} · Usage events: {{ usage_events_count_all }}</div>
+      </div>
+    </div>
+
+    <div class="spacer-16"></div>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+      <div class="card">
+        <strong>Top locations (last 30 days)</strong>
+        <div class="spacer-12"></div>
+
+        <div class="muted" style="margin-bottom: 6px;">Provinces/States</div>
+        {% if top_states_30 %}
+          <ol style="margin: 0; padding-left: 18px;">
+            {% for row in top_states_30 %}
+              <li>{{ row.state }} — {{ row.total }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <div class="muted">No location data yet.</div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <strong>Top cities (last 30 days)</strong>
+        <div class="spacer-12"></div>
+        {% if top_cities_30 %}
+          <ol style="margin: 0; padding-left: 18px;">
+            {% for row in top_cities_30 %}
+              <li>{{ row.city }}, {{ row.state }} — {{ row.total }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <div class="muted">No city data yet.</div>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <strong>Top postal codes (last 30 days)</strong>
+        <div class="spacer-12"></div>
+        {% if top_postal_30 %}
+          <ol style="margin: 0; padding-left: 18px;">
+            {% for row in top_postal_30 %}
+              <li>{{ row.postal_code }} — {{ row.total }}</li>
+            {% endfor %}
+          </ol>
+        {% else %}
+          <div class="muted">No postal data yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
   <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
     <div class="card">

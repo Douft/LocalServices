@@ -94,13 +94,23 @@
         <ul>
           <li><strong>Service directory data model</strong>: service categories and providers, including “Suggested” providers with ranking.</li>
           <li><strong>User profiles</strong>: stores user location (city/state/zip and optional lat/lng) + preferences.</li>
-          <li><strong>Analytics foundation</strong>: event tables for “requested” services (SearchEvent) and “used” providers (UsageEvent).</li>
-          <li><strong>Theme settings</strong>: admin-controlled site look (color templates, gradients, compact layout, glass effect, optional snow overlay).</li>
+          <li><strong>Analytics foundation</strong>: event tables for “requested” services (SearchEvent) and “used” providers (UsageEvent), with an admin report view that summarizes traffic and top locations.</li>
+          <li><strong>Consent + privacy</strong>: a first-load privacy notice asks visitors to accept/decline analytics; analytics events are only recorded after acceptance. A <code>/privacy/</code> page describes what’s tracked.</li>
+          <li><strong>Theme settings</strong>: admin-controlled site look (multiple color schemes, gradients, compact layout, glass effect) and optional seasonal overlays (snow + rain).</li>
           <li><strong>Gentle ads foundation</strong>: ad units with placements and scheduling (kept intentionally small and non-intrusive).</li>
           <li><strong>External provider backends</strong>: a pluggable “free-first, paid-later” integration for finding additional businesses by location (OpenStreetMap now; Google Places supported as a switchable backend).</li>
-          <li><strong>Public search</strong>: users can search without logging in; logged-in users get saved-location defaults.</li>
-          <li><strong>Admin panel</strong>: manage categories/providers/ads/theme, configure provider backend settings, and inspect analytics.</li>
-          <li><strong>Seed tooling</strong>: command to seed starter categories + demo providers + create/update a test admin.</li>
+          <li><strong>Public search + live results</strong>: users can search without logging in, with live results (AJAX) as they type and a selectable search radius.</li>
+          <li><strong>Geolocation defaulting</strong>: on the public search page, if no location is provided, the browser can populate lat/lng and the server reverse-geocodes into city/state/postal to avoid manual entry.</li>
+          <li><strong>Admin panel</strong>: manage categories/providers/ads/theme, configure provider backend settings, inspect analytics tables, and view staff reports at <code>/admin/reports/</code>.</li>
+          <li><strong>Seed tooling</strong>: commands to seed starter categories + demo providers; demo-only startup flags can auto-create an admin user and seed data on deploy.</li>
+        </ul>
+
+        <h2>Search UX (local + external)</h2>
+        <ul>
+          <li><strong>Live search</strong>: <code>/search/live/</code> returns an HTML fragment used to update the results list while typing.</li>
+          <li><strong>Radius</strong>: users can select 10/25/50/100 km; this radius is passed to external lookups.</li>
+          <li><strong>External providers</strong>: for “More results”, OpenStreetMap (Nominatim + Overpass) is used; tagging patterns are handled for better coverage (e.g. mechanic/auto repair uses multiple tag types).</li>
+          <li><strong>Location safety</strong>: geocoding is constrained to the requested country and avoids returning results from the wrong region.</li>
         </ul>
 
         <h2>Free-first local business lookup (OSM now, Google later)</h2>
@@ -175,7 +185,7 @@
               <li><strong>background_gradients</strong>: toggles decorative background glow.</li>
               <li><strong>glass_effect</strong>: toggles blur/glass styling.</li>
               <li><strong>compact_layout</strong>: reduces padding for a denser layout.</li>
-              <li><strong>snow_effect</strong>: seasonal visual effect overlay.</li>
+              <li><strong>snow_effect</strong> / <strong>rain_effect</strong>: seasonal visual effect overlays.</li>
             </ul>
           </li>
           <li><strong>Site ads</strong>
@@ -188,9 +198,16 @@
             <ul>
               <li><strong>SearchEvent</strong> (“requested”): what users are searching for.</li>
               <li><strong>UsageEvent</strong> (“used”): what users actually interact with (contact/click).</li>
-              <li><strong>Reports</strong>: staff-only summary view at <code>/admin/reports/</code>.</li>
+              <li><strong>Reports</strong>: staff-only summary view at <code>/admin/reports/</code>, including top locations and best-effort visitor counts (unique signed-in users + event totals).</li>
             </ul>
           </li>
+        </ul>
+
+        <h2>Privacy / consent</h2>
+        <ul>
+          <li>On first load, visitors see a consent prompt to accept/decline analytics tracking.</li>
+          <li>If declined, analytics events are not recorded (search still works).</li>
+          <li>The <code>/privacy/</code> page describes what is recorded and how to change the choice (clear cookies).</li>
         </ul>
 
         <h2>How “services are used” and measured</h2>
@@ -246,6 +263,11 @@ Start Command:
 python manage.py migrate --noinput &amp;&amp; gunicorn app.wsgi:application --bind 0.0.0.0:$PORT</code></pre>
 
         <div class="warning" style="margin-top: 12px;">
+          <strong>Why search works locally but not on Render</strong>
+          <p class="muted">Your local database (<code>db.sqlite3</code>) is not committed to git and won’t be present on Render. For a demo deployment, enable auto-seeding (below) or run <code>python manage.py seed_demo</code> once in the Render Shell so categories/providers exist.</p>
+        </div>
+
+        <div class="warning" style="margin-top: 12px;">
           <strong>Common copy/paste pitfall</strong>
           <p class="muted">If you copy commands from VS Code or chat, avoid pasting a Markdown link like <code>python [manage.py](...)</code>. Render runs commands via <code>bash -c</code> and the <code>(</code> causes a syntax error. Use plain <code>python manage.py ...</code>.</p>
         </div>
@@ -270,6 +292,7 @@ python manage.py migrate --noinput &amp;&amp; gunicorn app.wsgi:application --bi
           <li><strong>Optional (demo self-heal)</strong>
             <ul>
               <li><code>AUTO_MIGRATE_ON_STARTUP</code>=<code>True</code>: runs migrations during WSGI startup. Useful for demos if you accidentally deploy without a migrate step.</li>
+              <li><code>AUTO_CREATE_DEMO_ADMIN_ON_STARTUP</code>=<code>True</code>: runs <code>ensure_demo_admin</code> on startup (demo-only).</li>
               <li><code>AUTO_SEED_DEMO_ON_STARTUP</code>=<code>True</code>: runs <code>seed_demo</code> on startup (demo-only).</li>
             </ul>
           </li>
@@ -305,7 +328,7 @@ python manage.py migrate --noinput &amp;&amp; gunicorn app.wsgi:application --bi
 
         <div class="hr"></div>
 
-        <p class="muted">Last updated: December 24, 2025</p>
+        <p class="muted">Last updated: December 26, 2025</p>
       </div>
     </div>
   </body>

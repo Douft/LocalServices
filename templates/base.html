@@ -180,6 +180,15 @@
         --btn-glass-bg-hover: var(--glass-strong);
         --btn-glass-border: var(--border);
         --btn-glass-border-hover: var(--border-strong);
+
+        /* Brand mark: ensure the blue logo remains readable */
+        {% if theme_settings.color_scheme == 'frost' %}
+          --brand-mark-bg: rgba(255,255,255,0.86);
+          --brand-mark-border: rgba(7, 14, 16, 0.12);
+        {% else %}
+          --brand-mark-bg: rgba(255,255,255,0.92);
+          --brand-mark-border: rgba(0, 0, 0, 0.10);
+        {% endif %}
       }
       body {
         margin: 0;
@@ -285,8 +294,11 @@
         justify-content: center;
         padding: 10px 12px;
         border-radius: 14px;
-        background: var(--glass-strong);
-        border: 1px solid var(--border-strong);
+        background: var(--brand-mark-bg);
+        border: 1px solid var(--brand-mark-border);
+        box-shadow:
+          0 1px 0 0 rgba(255, 255, 255, 0.65) inset,
+          0 10px 26px 0 var(--surface-shadow);
       }
       .brand-logo-img {
         height: 56px;
@@ -574,6 +586,27 @@
         {% endif %}
         {% block content %}{% endblock %}
       </main>
+
+      <div class="muted" style="margin-top: 14px; font-size: 14px;">
+        Developed by: David Neufeld · Contact: <a href="mailto:david.enns.neufeld@gmail.com">david.enns.neufeld@gmail.com</a>
+      </div>
+    </div>
+
+    <div id="analytics-consent-overlay" style="display:none; position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,0.55);">
+      <div style="max-width: 720px; margin: 10vh auto 0; padding: 0 16px;">
+        <div class="glass" style="padding: 18px;">
+          <h2 style="margin-top: 0;">Privacy notice</h2>
+          <div class="muted" style="margin-top: 8px;">
+            We use cookies and store basic analytics (searches and provider clicks) to improve results and monitor performance.
+            See our <a href="/privacy/">Privacy</a> page for details.
+            Choose <strong>Accept</strong> to enable analytics. Choose <strong>Decline</strong> to continue without analytics.
+          </div>
+          <div style="display:flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+            <button id="analytics-consent-accept" class="btn primary" type="button">Accept</button>
+            <button id="analytics-consent-decline" class="btn" type="button">Decline</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -698,6 +731,74 @@
             for (var i = 0; i < forms.length; i++) initLiveSearch(forms[i]);
           } catch (e) {
             // Ignore.
+          }
+        }
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', boot);
+        } else {
+          boot();
+        }
+      })();
+    </script>
+
+    <script>
+      (function () {
+        function getCookie(name) {
+          try {
+            var m = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[-.$?*|{}()\[\]\\\/\+^]/g, '\\$&') + '=([^;]*)'));
+            return m ? decodeURIComponent(m[1]) : '';
+          } catch (e) {
+            return '';
+          }
+        }
+
+        function setCookie(name, value, maxAgeSeconds) {
+          try {
+            var secure = (location.protocol === 'https:') ? '; Secure' : '';
+            document.cookie = name + '=' + encodeURIComponent(value) + '; Path=/; Max-Age=' + String(maxAgeSeconds || 0) + '; SameSite=Lax' + secure;
+          } catch (e) {
+            // Ignore.
+          }
+        }
+
+        function hide(overlay) {
+          if (!overlay) return;
+          overlay.style.display = 'none';
+        }
+
+        function show(overlay) {
+          if (!overlay) return;
+          overlay.style.display = '';
+        }
+
+        function boot() {
+          var overlay = document.getElementById('analytics-consent-overlay');
+          if (!overlay) return;
+
+          var existing = (getCookie('ls_analytics_consent') || '').toLowerCase();
+          if (existing === 'yes' || existing === 'no') {
+            hide(overlay);
+            return;
+          }
+
+          show(overlay);
+
+          var accept = document.getElementById('analytics-consent-accept');
+          var decline = document.getElementById('analytics-consent-decline');
+
+          if (accept) {
+            accept.addEventListener('click', function () {
+              setCookie('ls_analytics_consent', 'yes', 60 * 60 * 24 * 180);
+              hide(overlay);
+            });
+          }
+
+          if (decline) {
+            decline.addEventListener('click', function () {
+              setCookie('ls_analytics_consent', 'no', 60 * 60 * 24 * 180);
+              hide(overlay);
+            });
           }
         }
 

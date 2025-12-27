@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy{% endblock %}
+
+{% block content %}
+  <h1>Privacy</h1>
+  <div class="muted" style="margin-top: 8px;">
+    This project stores basic analytics to understand how the site is used and to improve results.
+  </div>
+
+  <div class="card" style="margin-top: 14px;">
+    <h2 style="margin-top: 0;">What we track (if you accept)</h2>
+    <ul>
+      <li><strong>Search analytics</strong>: selected category, query text, and location fields you enter (city/state/postal code; optional coordinates if provided).</li>
+      <li><strong>Usage analytics</strong>: when you click to contact a provider or click a provider website link.</li>
+    </ul>
+    <div class="muted" style="margin-top: 10px;">
+      We do not sell this data. This is currently used for internal analytics while the project is in development.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px;">
+    <h2 style="margin-top: 0;">Your choice</h2>
+    <div class="muted">
+      If you choose <strong>Decline</strong> on the consent prompt, analytics events are not recorded.
+      You can change your choice by clearing the site cookies in your browser.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 12px;">
+    <h2 style="margin-top: 0;">Contact</h2>
+    <div class="muted">If you have questions about privacy for this demo, contact the site operator.</div>
+  </div>
+{% endblock %}

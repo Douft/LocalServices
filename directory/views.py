@@ -18,6 +18,15 @@ from .models import ServiceCategory, ServiceProvider
 from .provider_backends import ProviderBackendError, get_provider_backend
 
 
+def _has_analytics_consent(request) -> bool:
+	"""Return True when user consented to analytics tracking.
+
+	We use a simple cookie set by the front-end consent banner.
+	"""
+	val = str(request.COOKIES.get("ls_analytics_consent") or "").strip().lower()
+	return val in {"1", "true", "yes", "y", "accept", "accepted"}
+
+
 def _infer_category_from_query(query_text: str) -> tuple[ServiceCategory | None, bool]:
 	"""Infer category from a free-text query.
 
@@ -231,7 +240,7 @@ def public_search(request):
 		)
 
 	# Log searches when the user actually submits/loads query params (including geolocation auto-submit).
-	if request.GET:
+	if request.GET and _has_analytics_consent(request):
 		SearchEvent.objects.create(
 			user=request.user if request.user.is_authenticated else None,
 			service_category=selected_category,
@@ -431,17 +440,18 @@ def dashboard(request):
 				| Q(category__name__icontains=query_text)
 			)
 
-		# Log the search (requested services)
-		SearchEvent.objects.create(
-			user=request.user,
-			service_category=selected_category,
-			query_text=query_text,
-			city=profile.city,
-			state=profile.state,
-			postal_code=profile.postal_code,
-			latitude=profile.latitude,
-			longitude=profile.longitude,
-		)
+		# Log the search (requested services) only when user consented.
+		if _has_analytics_consent(request):
+			SearchEvent.objects.create(
+				user=request.user,
+				service_category=selected_category,
+				query_text=query_text,
+				city=profile.city,
+				state=profile.state,
+				postal_code=profile.postal_code,
+				latitude=profile.latitude,
+				longitude=profile.longitude,
+			)
 
 		# External search (free-first via OSM). Only run when the user is actively searching.
 		if request.GET and selected_category and (profile.postal_code or (profile.city and profile.state)):
@@ -494,17 +504,18 @@ def contact_provider(request, provider_id: int):
 	provider = get_object_or_404(ServiceProvider, pk=provider_id, is_active=True)
 	profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-	UsageEvent.objects.create(
-		user=request.user,
-		service_category=provider.category,
-		provider=provider,
-		action=UsageAction.CONTACT,
-		city=profile.city,
-		state=profile.state,
-		postal_code=profile.postal_code,
-		latitude=profile.latitude,
-		longitude=profile.longitude,
-	)
+	if _has_analytics_consent(request):
+		UsageEvent.objects.create(
+			user=request.user,
+			service_category=provider.category,
+			provider=provider,
+			action=UsageAction.CONTACT,
+			city=profile.city,
+			state=profile.state,
+			postal_code=profile.postal_code,
+			latitude=profile.latitude,
+			longitude=profile.longitude,
+		)
 
 	messages.success(request, f"Logged contact for {provider.name}.")
 	return redirect("dashboard")
@@ -522,16 +533,17 @@ def provider_out(request, provider_id: int):
 		raise Http404()
 
 	profile, _ = UserProfile.objects.get_or_create(user=request.user)
-	UsageEvent.objects.create(
-		user=request.user,
-		service_category=provider.category,
-		provider=provider,
-		action=UsageAction.CLICK_WEBSITE,
-		city=profile.city,
-		state=profile.state,
-		postal_code=profile.postal_code,
-		latitude=profile.latitude,
-		longitude=profile.longitude,
-	)
+	if _has_analytics_consent(request):
+		UsageEvent.objects.create(
+			user=request.user,
+			service_category=provider.category,
+			provider=provider,
+			action=UsageAction.CLICK_WEBSITE,
+			city=profile.city,
+			state=profile.state,
+			postal_code=profile.postal_code,
+			latitude=profile.latitude,
+			longitude=profile.longitude,
+		)
 
 	return redirect(provider.website)
