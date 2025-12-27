@@ -1,0 +1,42 @@
+{% load i18n %}
+
+<div class="module ls-admin-messages">
+  <div class="ls-admin-messages-head">
+    <h1 class="ls-admin-messages-title">{% translate "Messages" %}</h1>
+    <div class="ls-admin-muted">
+      {% if unread_count %}
+        {% blocktranslate count unread_count=unread_count %}You have {{ unread_count }} unread customer message.{% plural %}You have {{ unread_count }} unread customer messages.{% endblocktranslate %}
+      {% else %}
+        {% translate "No new customer messages." %}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if unread_threads %}
+    <div class="ls-admin-spacer"></div>
+    <div class="ls-admin-messages-list">
+      {% for t in unread_threads %}
+        <div class="module ls-admin-messages-item">
+          <div style="display:flex; gap:10px; align-items:flex-start; justify-content:space-between;">
+            <div style="min-width:0;">
+              <strong style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 70ch;">{{ t.subject }}</strong>
+              <div class="ls-admin-muted ls-admin-tight">{{ t.user }}</div>
+            </div>
+            <div class="ls-admin-muted" style="white-space:nowrap;">
+              {% if t.last_message_at %}{{ t.last_message_at|date:"Y-m-d H:i" }}{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="ls-admin-spacer"></div>
+          <div class="ls-admin-extra">
+            <a class="button" href="/admin/messaging/supportthread/{{ t.id }}/change/">{% translate "Open & reply" %}</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="ls-admin-spacer"></div>
+  <div class="ls-admin-extra">
+    <a class="button" href="/admin/messaging/supportthread/">{% translate "Open inbox" %}</a>
+  </div>
+</div>

@@ -1,0 +1,692 @@
+/* Global admin styling to better match the site’s glassy theme.
+   Loaded via templates/admin/base_site.html.
+
+   Note: This intentionally stays light-touch and mostly overrides Django Admin CSS variables
+   so the built-in layout remains stable across pages.
+*/
+
+/*
+  Admin theme note:
+  Django Admin can run in light/dark/auto via theme.js which sets html[data-theme].
+  To avoid unreadable combinations (light backgrounds + light text), we apply our palette
+  to both light and dark themes.
+*/
+
+:root,
+html[data-theme="light"],
+html[data-theme="dark"],
+html[data-theme="auto"] {
+  /* Forest-ish palette aligned with the public site’s “forest” scheme */
+  --admin-bg: #07140f;
+  --admin-fg: #e9fff5;
+  --admin-muted: rgba(233, 255, 245, 0.88);
+  --admin-border: rgba(255, 255, 255, 0.12);
+  --admin-border-strong: rgba(255, 255, 255, 0.17);
+  --admin-glass: rgba(255, 255, 255, 0.055);
+  --admin-glass-strong: rgba(255, 255, 255, 0.085);
+  --admin-shadow: rgba(0, 0, 0, 0.35);
+  --admin-shine: rgba(255, 255, 255, 0.10);
+
+  --admin-accent: rgba(120, 255, 200, 0.26);
+  --admin-accent-strong: rgba(120, 255, 200, 0.38);
+  --admin-focus: rgba(120, 255, 200, 0.22);
+
+  /* Django admin CSS variables (best-effort) */
+  --body-bg: var(--admin-bg);
+  --body-fg: var(--admin-fg);
+  --body-quiet-color: var(--admin-muted);
+  --body-loud-color: var(--admin-fg);
+
+  /* Secondary surface tokens used by Django Admin */
+  --darkened-bg: rgba(0, 0, 0, 0.18);
+  --selected-bg: rgba(120, 255, 200, 0.10);
+  --selected-row: rgba(120, 255, 200, 0.08);
+
+  /* Base admin uses these too; keep them coherent */
+  --breadcrumbs-link-fg: var(--admin-fg);
+
+  --hairline-color: var(--admin-border);
+  --border-color: var(--admin-border);
+
+  --primary: rgba(120, 255, 200, 0.20);
+  --secondary: rgba(120, 190, 255, 0.14);
+  --accent: rgba(120, 255, 160, 0.12);
+
+  --header-bg: rgba(0, 0, 0, 0.22);
+  --header-color: var(--admin-fg);
+  --breadcrumbs-bg: rgba(0, 0, 0, 0.18);
+  --breadcrumbs-fg: var(--admin-fg);
+
+  --link-fg: rgba(200, 255, 235, 0.98);
+  --link-hover-color: rgba(255, 255, 255, 0.98);
+  --link-selected-fg: rgba(255, 255, 255, 0.98);
+
+  --button-fg: var(--admin-fg);
+  --button-bg: rgba(255, 255, 255, 0.06);
+  --button-hover-bg: rgba(255, 255, 255, 0.09);
+
+  --default-button-bg: rgba(120, 255, 200, 0.15);
+  --default-button-hover-bg: rgba(120, 255, 200, 0.22);
+
+  --error-fg: #ffd6d6;
+  --message-success-bg: rgba(120, 255, 200, 0.10);
+  --message-warning-bg: rgba(255, 200, 140, 0.10);
+  --message-error-bg: rgba(255, 120, 120, 0.10);
+}
+
+html, body {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(120, 255, 200, 0.12), transparent),
+    radial-gradient(900px 650px at 85% 0%, rgba(120, 190, 255, 0.09), transparent),
+    radial-gradient(900px 650px at 60% 100%, rgba(120, 255, 160, 0.06), transparent),
+    var(--admin-bg);
+}
+
+/* Readability pass: slightly larger type + clearer secondary text */
+body {
+  font-size: 14px;
+}
+
+/* Small admin utilities (used by reports panel) */
+.ls-admin-muted {
+  color: var(--admin-muted);
+}
+
+.ls-admin-tight {
+  margin-top: 6px;
+}
+
+.ls-admin-spacer {
+  height: 12px;
+}
+
+.ls-admin-ol {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.ls-admin-ol > li {
+  margin: 4px 0;
+}
+
+/* Global change-form wrapper (added via templates/admin/change_form.html) */
+.ls-admin-change {
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 18px 44px 0 var(--admin-shadow);
+  padding: 14px;
+}
+
+@media (max-width: 600px) {
+  .ls-admin-change { padding: 12px; }
+}
+
+label,
+.help,
+.helptext,
+p.help,
+.form-row .help {
+  color: var(--admin-muted);
+}
+
+th, td {
+  color: var(--admin-fg);
+}
+
+/* Ensure common admin panels never fall back to white */
+#content,
+#content-main,
+#changelist,
+#changelist-form,
+.changelist-form-container,
+.results,
+.dashboard,
+.change-form,
+.module caption,
+fieldset.module,
+.inline-related,
+.selector,
+.selector-available,
+.selector-chosen {
+  background: transparent;
+}
+
+/*
+  Why we don't need !important:
+  Django Admin (base.css/forms.css) generally renders panels using var(--body-bg) and var(--darkened-bg)
+  (e.g. `.module { background: var(--body-bg); }`, `fieldset { background: var(--darkened-bg); }`).
+  By overriding those variables above, we keep the whole admin coherent.
+  The rules below only add glass borders/blur for a consistent “site look”.
+*/
+
+.change-form .module,
+.change-form fieldset,
+.change-form .inline-group,
+.change-form .inline-related,
+.change-form .submit-row {
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 16px 34px 0 var(--admin-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.change-form .object-tools,
+.change-form .object-tools a {
+  border-radius: 999px;
+}
+
+/* Inline help + readonly values */
+.change-form .help,
+.change-form .helptext,
+.change-form .readonly,
+.change-form .fieldBox,
+.change-form .form-row p,
+.change-form .form-row .help {
+  color: var(--admin-muted);
+}
+
+/* Headings inside the main panel */
+.change-form h1,
+.change-form h2,
+.change-form h3,
+.change-form caption,
+.change-form legend {
+  color: var(--admin-fg);
+}
+
+/* Remove any remaining pure-white backgrounds used by certain widgets */
+.change-form .related-widget-wrapper,
+.change-form .selector,
+.change-form .selector .selector-filter,
+.change-form .selector .selector-available,
+.change-form .selector .selector-chosen,
+.change-form .calendarbox,
+.change-form .clockbox {
+  background: rgba(0,0,0,0.18);
+  border-color: var(--admin-border);
+  color: var(--admin-fg);
+}
+
+/* Default form rows sometimes have a white-ish background in light theme */
+.form-row,
+.aligned .form-row,
+fieldset .form-row {
+  background: transparent;
+}
+
+/* Inputs: ensure text has enough contrast */
+input, select, textarea {
+  color: var(--admin-fg);
+  background: rgba(0,0,0,0.18);
+  border: 1px solid var(--admin-border);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(233, 255, 245, 0.62);
+}
+
+select {
+  background: rgba(0,0,0,0.20);
+}
+
+/* Django's field boxes / readonly fields */
+.readonly,
+.fieldBox {
+  color: var(--admin-fg);
+}
+
+/* Sidebar (nav sidebar) legibility */
+#nav-sidebar {
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Header / breadcrumbs: keep admin layout but make it glassy */
+#header {
+  margin: 14px 14px 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 18px 44px 0 var(--admin-shadow);
+}
+
+/* Make the header brand feel tighter and consistent */
+#header #branding h1,
+#header #branding h1 a {
+  color: var(--admin-fg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+#header a:link,
+#header a:visited {
+  color: var(--admin-fg);
+}
+
+div.breadcrumbs {
+  margin: 0 14px 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Pull the main content area in line with the header margins */
+#content {
+  margin: 0 14px 14px;
+  padding-top: 18px;
+}
+
+@media (max-width: 600px) {
+  #header { margin: 12px 10px 10px; }
+  div.breadcrumbs { margin: 0 10px 12px; }
+  #content { margin: 0 10px 12px; }
+}
+
+/* Cards / modules */
+.module,
+.app-auth.module,
+.app-themes.module,
+.app-directory.module,
+.app-accounts.module,
+.app-siteads.module,
+.app-analyticsapp.module,
+.inline-group,
+.submit-row,
+#content-main > .module {
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 16px 34px 0 var(--admin-shadow);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Make the global wrapper match the softer look */
+#container {
+  padding-bottom: 8px;
+}
+
+/* Tables: subtle separators */
+#result_list {
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+#result_list thead th {
+  background: rgba(0,0,0,0.18);
+  border-bottom: 1px solid var(--admin-border);
+}
+
+#result_list tbody tr {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+#result_list tbody tr:hover {
+  background: rgba(120, 255, 200, 0.06);
+}
+
+/* Admin index: circular glass hub */
+.dashboard .ls-admin-hub {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+  justify-items: center;
+}
+
+/* Admin home (Option 2): simple app cards grid */
+.dashboard .ls-admin-home {
+  display: grid;
+  gap: 14px;
+}
+
+/* Reports panel */
+.dashboard .ls-admin-reports {
+  padding: 14px;
+}
+
+/* Messages panel */
+.dashboard .ls-admin-messages {
+  padding: 14px;
+}
+
+.dashboard .ls-admin-messages-head {
+  display: grid;
+  gap: 6px;
+}
+
+.dashboard .ls-admin-messages-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.dashboard .ls-admin-messages-list {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
+
+.dashboard .ls-admin-messages-item {
+  padding: 12px;
+}
+
+.dashboard .ls-admin-reports-head {
+  display: grid;
+  gap: 6px;
+}
+
+.dashboard .ls-admin-reports-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.dashboard .ls-admin-reports-grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
+
+.dashboard .ls-admin-reports-card {
+  padding: 12px;
+}
+
+.dashboard .ls-admin-home-header {
+  padding: 14px;
+}
+
+.dashboard .ls-admin-home-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.dashboard .ls-admin-home-subtitle {
+  margin-top: 6px;
+  color: var(--admin-muted);
+}
+
+.dashboard .ls-admin-home-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: start;
+}
+
+.dashboard .ls-admin-app {
+  padding: 12px;
+}
+
+.dashboard .ls-admin-app-title {
+  margin: 2px 0 12px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.dashboard .ls-admin-round {
+  width: min(720px, calc(100vw - 28px));
+  height: min(720px, calc(100vw - 28px));
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  border: 1px solid var(--admin-border-strong);
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 28px 64px 0 var(--admin-shadow);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard .ls-admin-round-inner {
+  position: absolute;
+  inset: 0;
+  padding: 22px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
+}
+
+.dashboard .ls-admin-round-header {
+  text-align: center;
+}
+
+.dashboard .ls-admin-round-title {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.dashboard .ls-admin-round-subtitle {
+  color: var(--admin-muted);
+  margin-top: 6px;
+}
+
+.dashboard .ls-admin-round-body {
+  overflow: auto;
+  padding: 8px;
+  border-radius: 16px;
+}
+
+.dashboard .ls-app-pane {
+  display: none;
+}
+
+.dashboard .ls-app-pane.active {
+  display: block;
+}
+
+.dashboard .ls-app-title {
+  margin: 8px 0 10px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.dashboard .ls-model-list {
+  display: grid;
+  gap: 10px;
+}
+
+.dashboard .ls-model-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background: rgba(0,0,0,0.16);
+}
+
+.dashboard .ls-model-name {
+  font-weight: 650;
+}
+
+.dashboard .ls-model-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dashboard .ls-admin-ring {
+  position: relative;
+  width: min(860px, calc(100vw - 28px));
+  height: min(860px, calc(100vw - 28px));
+  pointer-events: none;
+}
+
+.dashboard .ls-admin-ring-buttons {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dashboard .ls-ring-btn {
+  pointer-events: auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform:
+    translate(-50%, -50%)
+    rotate(calc((360deg / var(--n, 5)) * var(--i, 0)))
+    translateY(calc(-1 * min(400px, 42vw)))
+    rotate(calc((-360deg / var(--n, 5)) * var(--i, 0)));
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--admin-border);
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass));
+  color: var(--admin-fg);
+  cursor: pointer;
+  box-shadow: 0 1px 0 0 var(--admin-shine) inset;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.dashboard .ls-ring-btn[aria-selected="true"] {
+  border-color: var(--admin-accent-strong);
+  box-shadow:
+    0 1px 0 0 var(--admin-shine) inset,
+    0 0 0 4px var(--admin-focus);
+}
+
+.dashboard .ls-ring-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--admin-accent-strong);
+  box-shadow: 0 0 0 3px rgba(120,255,200,0.12);
+}
+
+.dashboard .ls-ring-label {
+  font-weight: 650;
+}
+
+.dashboard .ls-admin-extra {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .dashboard .ls-admin-ring { height: min(740px, calc(100vw - 28px)); }
+  .dashboard .ls-ring-btn { padding: 9px 10px; }
+  .dashboard .ls-ring-label { font-size: 13px; }
+}
+
+@media (max-width: 520px) {
+  .dashboard .ls-admin-ring { display: none; }
+  .dashboard .ls-admin-round { width: calc(100vw - 20px); height: calc(100vw - 20px); }
+}
+
+/* Form fields: keep admin behavior; add nicer focus ring */
+input, select, textarea {
+  border-radius: 12px;
+}
+
+input:focus, select:focus, textarea:focus,
+.vTextField:focus, .vLargeTextField:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--admin-focus);
+  border-color: var(--admin-accent-strong);
+}
+
+/* Buttons */
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+  border-radius: 12px;
+}
+
+.button.default, input[type=submit].default {
+  border: 1px solid var(--admin-accent);
+}
+
+/* Login page: center panel and give it glass */
+.login #content {
+  padding-top: 28px;
+}
+
+.login #content-main {
+  max-width: 520px;
+}
+
+.login .form-row,
+.login .submit-row {
+  border: 0;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/*
+  Failsafe (allowed to use !important):
+  If any later/third-party admin CSS reverts variables or panel backgrounds,
+  force core surfaces back to the intended glass-on-dark look.
+*/
+:root,
+html[data-theme="light"],
+html[data-theme="dark"],
+html[data-theme="auto"] {
+  --body-bg: var(--admin-bg) !important;
+  --body-fg: var(--admin-fg) !important;
+  --body-quiet-color: var(--admin-muted) !important;
+  --body-medium-color: var(--admin-muted) !important;
+  --body-loud-color: var(--admin-fg) !important;
+  --darkened-bg: rgba(0, 0, 0, 0.18) !important;
+  --selected-bg: rgba(120, 255, 200, 0.10) !important;
+  --selected-row: rgba(120, 255, 200, 0.08) !important;
+  --hairline-color: var(--admin-border) !important;
+  --border-color: var(--admin-border) !important;
+}
+
+body {
+  color: var(--admin-fg) !important;
+  background:
+    radial-gradient(1200px 800px at 20% 10%, rgba(120, 255, 200, 0.12), transparent),
+    radial-gradient(900px 650px at 85% 0%, rgba(120, 190, 255, 0.09), transparent),
+    radial-gradient(900px 650px at 60% 100%, rgba(120, 255, 160, 0.06), transparent),
+    var(--admin-bg) !important;
+}
+
+#header,
+div.breadcrumbs,
+#nav-sidebar,
+.module,
+fieldset.module,
+.inline-group,
+.submit-row,
+.ls-admin-change {
+  background: linear-gradient(180deg, var(--admin-glass-strong), var(--admin-glass)) !important;
+  border-color: var(--admin-border) !important;
+}

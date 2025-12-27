@@ -1,0 +1,11 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block responsive %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'theming/admin_global.css' %}?v=20251227-8">
+{% endblock %}
+
+{% block branding %}
+  {{ block.super }}
+{% endblock %}

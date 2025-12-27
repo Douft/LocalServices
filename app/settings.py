@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'accounts',
     'directory',
     'analyticsapp',
+    'messaging',
     'theming',
     'siteads',
 ]

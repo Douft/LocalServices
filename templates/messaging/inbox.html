@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Messages · Local Services{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="glass" style="padding: 18px;">
+      <div style="display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+        <div>
+          <h1 style="margin:0;">Messages</h1>
+          <div class="muted" style="margin-top:6px;">Contact us about advertising, feedback, or support. We’ll reply here.</div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a class="btn btn-primary" href="{% url 'messaging:new' %}">New message</a>
+          <a class="btn" href="{% url 'dashboard' %}">Dashboard</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer-12"></div>
+
+    {% if threads %}
+      <div class="grid">
+        {% for t in threads %}
+          <div class="card">
+            <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+              <strong style="min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ t.subject }}</strong>
+              {% if t.has_unread_for_user %}
+                <span class="pill btn-primary" style="padding: 6px 10px;">New reply</span>
+              {% endif %}
+            </div>
+            <div class="muted" style="margin-top: 6px;">
+              Status: {{ t.get_status_display }}
+              {% if t.last_message_at %} · Last message: {{ t.last_message_at|date:"Y-m-d H:i" }}{% endif %}
+            </div>
+            <div class="spacer-12"></div>
+            <a class="btn" href="{% url 'messaging:thread' thread_id=t.id %}">Open</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="card">
+        <strong>No messages yet</strong>
+        <div class="muted" style="margin-top: 6px;">Start a new message and we’ll reply here.</div>
+        <div class="spacer-12"></div>
+        <a class="btn btn-primary" href="{% url 'messaging:new' %}">New message</a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

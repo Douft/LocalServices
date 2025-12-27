@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_reports admin_messages %}
+
+{#
+  Admin landing page: show analytics report panel.
+  (Django's built-in admin/app_index.html extends admin/index.html, so this template is shared.)
+#}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block content %}
+  <div class="ls-admin-home" aria-label="Admin home">
+    {% admin_messages_panel %}
+    {% admin_reports_panel %}
+
+    <div class="ls-admin-extra">
+      <a class="button" href="/">{% translate "Back to site" %}</a>
+      <a class="button" href="/admin/password_change/">{% translate "Change password" %}</a>
+    </div>
+  </div>
+{% endblock %}

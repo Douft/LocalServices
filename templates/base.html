@@ -285,6 +285,20 @@
         align-items:center;
         gap: 14px;
         margin-bottom: 14px;
+        padding: 10px 10px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, var(--glass-strong), var(--glass));
+        border: 1px solid var(--border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow:
+          0 1px 0 0 var(--surface-shine) inset,
+          0 18px 44px 0 var(--surface-shadow);
+      }
+
+      @media (max-width: 560px) {
+        .topbar { justify-content: center; flex-wrap: wrap; }
+        .nav { justify-content: center; }
       }
       .brand { display:flex; flex-direction: column; gap: 2px; }
       .brand strong { font-weight: 700; letter-spacing: -0.02em; }

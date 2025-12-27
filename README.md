@@ -51,3 +51,10 @@ Optional demo content (dev/testing only):
 - `python manage.py migrate`
 - `python manage.py seed_demo`
 - `python manage.py runserver`
+
+## Backup (ZIP snapshot)
+
+Creates a timestamped ZIP of the project into `backup/` (excludes `.venv`, `.git`, `__pycache__`, and the backup folders themselves):
+
+- PowerShell (run from the project root):
+  - `$ErrorActionPreference='Stop'; $root=(Get-Location).Path; $destDir=Join-Path $root 'backup'; if (!(Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }; $timestamp=Get-Date -Format 'yyyyMMdd-HHmmss'; $zipPath=Join-Path $destDir "local_services-backup-$timestamp.zip"; $exclude=@('.venv','__pycache__','.git','backup','backups','staticfiles'); $items=Get-ChildItem -LiteralPath $root -Force | Where-Object { $exclude -notcontains $_.Name }; Compress-Archive -LiteralPath $items.FullName -DestinationPath $zipPath -CompressionLevel Optimal; Get-Item $zipPath | Select-Object FullName,Length,LastWriteTime`

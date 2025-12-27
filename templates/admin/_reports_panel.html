@@ -1,0 +1,83 @@
+{% load i18n %}
+
+<div class="module ls-admin-reports">
+  <div class="ls-admin-reports-head">
+    <h1 class="ls-admin-reports-title">{% translate "Reports" %}</h1>
+    <div class="ls-admin-muted">
+      {% translate "Top requested services vs top used providers (contact + website clicks), plus basic analytics." %}
+    </div>
+  </div>
+
+  <div class="ls-admin-reports-grid">
+    <div class="module ls-admin-reports-card">
+      <strong>{% translate "Last 30 days" %}</strong>
+      <div class="ls-admin-spacer"></div>
+      <div>{% translate "Unique signed-in users:" %} <strong>{{ unique_users_30 }}</strong></div>
+      <div class="ls-admin-muted ls-admin-tight">
+        {% translate "Searchers:" %} {{ unique_search_users_30 }} · {% translate "Users with usage actions:" %} {{ unique_usage_users_30 }}
+      </div>
+      <div class="ls-admin-muted ls-admin-tight">
+        {% translate "Search events:" %} {{ search_events_count_30 }} · {% translate "Usage events:" %} {{ usage_events_count_30 }}
+      </div>
+    </div>
+
+    <div class="module ls-admin-reports-card">
+      <strong>{% translate "All time" %}</strong>
+      <div class="ls-admin-spacer"></div>
+      <div>{% translate "Unique signed-in users:" %} <strong>{{ unique_users_all }}</strong></div>
+      <div class="ls-admin-muted ls-admin-tight">
+        {% translate "Searchers:" %} {{ unique_search_users_all }} · {% translate "Users with usage actions:" %} {{ unique_usage_users_all }}
+      </div>
+      <div class="ls-admin-muted ls-admin-tight">
+        {% translate "Search events:" %} {{ search_events_count_all }} · {% translate "Usage events:" %} {{ usage_events_count_all }}
+      </div>
+    </div>
+
+    <div class="module ls-admin-reports-card">
+      <strong>{% translate "Top locations (last 30 days)" %}</strong>
+      <div class="ls-admin-spacer"></div>
+      {% if top_states_30 %}
+        <ol class="ls-admin-ol">
+          {% for row in top_states_30 %}
+            <li>{{ row.state }} — {{ row.total }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="ls-admin-muted">{% translate "No location data yet." %}</div>
+      {% endif %}
+    </div>
+
+    <div class="module ls-admin-reports-card">
+      <strong>{% translate "Top requested (categories)" %}</strong>
+      <div class="ls-admin-spacer"></div>
+      {% if top_requested %}
+        <ol class="ls-admin-ol">
+          {% for row in top_requested %}
+            <li>{{ row.service_category__name }} — {{ row.total }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="ls-admin-muted">{% translate "No requests yet." %}</div>
+      {% endif %}
+    </div>
+
+    <div class="module ls-admin-reports-card">
+      <strong>{% translate "Top used (providers)" %}</strong>
+      <div class="ls-admin-spacer"></div>
+      {% if top_used %}
+        <ol class="ls-admin-ol">
+          {% for row in top_used %}
+            <li>{{ row.provider__name }} — {{ row.total }}</li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <div class="ls-admin-muted">{% translate "No usage yet (contact/click)." %}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="ls-admin-spacer"></div>
+  <div class="ls-admin-extra">
+    <a class="button" href="/admin/reports/">{% translate "Open full reports" %}</a>
+  </div>
+</div>

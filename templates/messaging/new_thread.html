@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}New message · Local Services{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="glass" style="padding: 18px;">
+      <h1 style="margin:0;">New message</h1>
+      <div class="muted" style="margin-top:6px;">Send us a note about advertising, support, or feedback.</div>
+    </div>
+
+    <div class="spacer-12"></div>
+
+    <div class="card">
+      <form method="post" class="form-grid" novalidate>
+        {% csrf_token %}
+
+        <div>
+          <label for="id_subject">Subject</label>
+          {{ form.subject }}
+          {% if form.subject.errors %}
+            <div class="muted" style="margin-top: 6px;">{{ form.subject.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div style="grid-column: 1 / -1;">
+          <label for="id_message">Message</label>
+          {{ form.message }}
+          {% if form.message.errors %}
+            <div class="muted" style="margin-top: 6px;">{{ form.message.errors }}</div>
+          {% endif %}
+        </div>
+
+        <div style="align-self:end; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary" type="submit">Send</button>
+          <a class="btn" href="{% url 'messaging:inbox' %}">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
