@@ -179,6 +179,15 @@
       .home-hero-media img { min-height: clamp(520px, 62vh, 680px); }
     }
 
+    @media (max-width: 560px) {
+      .home-hero-media img {
+        object-fit: contain;
+        object-position: 50% 50%;
+        transform: scale(1);
+        min-height: clamp(360px, 48vh, 460px);
+      }
+    }
+
     @media (max-height: 740px) {
       .home-hero-inner { padding: 14px; }
       .home-hero-media { min-height: 360px; }
